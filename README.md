@@ -41,3 +41,4 @@ This project is a Flutter application.
 
 - [Flutter](https://flutter.dev/)
 - [Supabase](https://supabase.io/) - Backend as a Service
+# StarCyv1
