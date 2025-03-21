@@ -9,6 +9,7 @@ class UserTermsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = DeviceUtils.getDeviceType() == DeviceType.desktop;
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -16,12 +17,15 @@ class UserTermsPage extends StatelessWidget {
           child: Container(
             alignment: Alignment.center,
             constraints: const BoxConstraints(
-              maxWidth: 550,
+              maxWidth: 500,
             ),
             child: Stack(
               fit: StackFit.expand,
               children: [
                 SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(
+                    vertical: isDesktop ? 65.appSp : 0,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

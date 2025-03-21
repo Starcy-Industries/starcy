@@ -1,14 +1,19 @@
 import 'package:device_preview/device_preview.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:starcy/core/routes/app_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart' as dotenv;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+import 'firebase_options.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   // Load environment variables
   await dotenv.load(fileName: ".env");
 
@@ -39,7 +44,7 @@ class MyApp extends StatelessWidget {
       builder: (context, child) => MaterialApp.router(
         title: 'Starcy',
         theme: ThemeData(
-          fontFamily: 'OpenSans',
+          fontFamily: 'Inter',
           useMaterial3: true,
           colorScheme: const ColorScheme(
             brightness: Brightness.light,

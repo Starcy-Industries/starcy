@@ -1,0 +1,55 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "starcy-171f1",
+          "appId": "1:760107320718:android:5c3c54a180585acd9150df",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "starcy-171f1",
+          "appId": "1:760107320718:ios:8246bf88743fcbf49150df",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "macos": {
+        "default": {
+          "projectId": "starcy-171f1",
+          "appId": "1:760107320718:ios:8246bf88743fcbf49150df",
+          "uploadDebugSymbols": false,
+          "fileOutput": "macos/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "starcy-171f1",
+          "configurations": {
+            "android": "1:760107320718:android:5c3c54a180585acd9150df",
+            "ios": "1:760107320718:ios:8246bf88743fcbf49150df",
+            "macos": "1:760107320718:ios:8246bf88743fcbf49150df",
+            "web": "1:760107320718:web:3d309a69ac12e46e9150df",
+            "windows": "1:760107320718:web:1fba7cfd7dd6ebbb9150df"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

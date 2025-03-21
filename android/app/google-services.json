@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "760107320718",
+    "project_id": "starcy-171f1",
+    "storage_bucket": "starcy-171f1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:760107320718:android:5c3c54a180585acd9150df",
+        "android_client_info": {
+          "package_name": "com.starcy.app.starcy"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAJEU-68B3mbIUO9Rt3ih8YeLu7AsCVQWk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

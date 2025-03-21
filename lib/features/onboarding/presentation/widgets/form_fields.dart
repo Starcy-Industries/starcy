@@ -10,6 +10,7 @@ class OnboardingTextField extends StatelessWidget {
   final bool obscureText;
   final String? Function(String?)? validator;
   final void Function(String)? onChanged;
+  final bool? isEdit;
 
   const OnboardingTextField({
     super.key,
@@ -20,6 +21,7 @@ class OnboardingTextField extends StatelessWidget {
     this.obscureText = false,
     this.validator,
     this.onChanged,
+    this.isEdit,
   });
 
   @override
@@ -31,8 +33,8 @@ class OnboardingTextField extends StatelessWidget {
           label,
           style: TextStyle(
             fontSize: 12.appSp,
-            fontWeight: FontWeight.w600,
-            color: Colors.black,
+            fontWeight: FontWeight.w700,
+            color: isEdit == true ? Colors.white : Colors.black,
           ),
         ),
         SizedBox(height: 8.appSp),
@@ -42,21 +44,31 @@ class OnboardingTextField extends StatelessWidget {
           obscureText: obscureText,
           validator: validator,
           onChanged: onChanged,
+          style: TextStyle(
+              fontSize: 12.appSp,
+              color: isEdit == true ? Colors.white : Colors.black),
           decoration: InputDecoration(
             hintText: hintText,
+            enabledBorder: const OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.grey, width: 0.0),
+            ),
+            focusedBorder: const OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.grey, width: 0.0),
+            ),
+            errorBorder: const OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.redAccent, width: 0.0),
+            ),
+            focusedErrorBorder: const OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.redAccent, width: 0.0),
+            ),
             hintStyle: TextStyle(
               color: Colors.grey.shade400,
-              fontSize: 14.appSp,
+              fontSize: 12.appSp,
             ),
-            filled: true,
-            fillColor: Colors.grey.shade100,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.appSp),
-              borderSide: BorderSide.none,
-            ),
+            isDense: true,
             contentPadding: EdgeInsets.symmetric(
               horizontal: 16.appSp,
-              vertical: 14.appSp,
+              vertical: 10.appSp,
             ),
           ),
         ),
@@ -71,6 +83,7 @@ class OnboardingDropdown extends StatelessWidget {
   final List<String> items;
   final void Function(String?) onChanged;
   final String? Function(String?)? validator;
+  final bool? isEdit;
 
   const OnboardingDropdown({
     super.key,
@@ -79,10 +92,12 @@ class OnboardingDropdown extends StatelessWidget {
     required this.items,
     required this.onChanged,
     this.validator,
+    this.isEdit,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = DeviceUtils.getDeviceType() == DeviceType.desktop;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -90,8 +105,8 @@ class OnboardingDropdown extends StatelessWidget {
           label,
           style: TextStyle(
             fontSize: 12.appSp,
-            fontWeight: FontWeight.w600,
-            color: Colors.black,
+            fontWeight: FontWeight.w700,
+            color: isEdit == true ? Colors.white : Colors.black,
           ),
         ),
         SizedBox(height: 8.appSp),
@@ -103,11 +118,13 @@ class OnboardingDropdown extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16.appSp),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(12.appSp),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16.appSp,
+                    vertical: isDesktop ? 4.appSp : 7.appSp,
                   ),
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(6.appSp),
+                      border: Border.all(color: Colors.grey, width: 0.0)),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
                       value: value.isEmpty ? null : value,
@@ -115,21 +132,23 @@ class OnboardingDropdown extends StatelessWidget {
                         'Select ${label.toLowerCase()}',
                         style: TextStyle(
                           color: Colors.grey.shade400,
-                          fontSize: 14.appSp,
+                          fontSize: 12.appSp,
                         ),
                       ),
                       isExpanded: true,
                       icon: const Icon(Icons.arrow_drop_down),
                       elevation: 16,
+                      isDense: true,
                       style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 14.appSp,
+                        color: isEdit == true ? Colors.white : Colors.black,
+                        fontSize: 12.appSp,
                       ),
                       onChanged: (newValue) {
                         onChanged(newValue);
                         state.didChange(newValue);
                       },
-                      items: items.map<DropdownMenuItem<String>>((String value) {
+                      items:
+                          items.map<DropdownMenuItem<String>>((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
                           child: Text(value),
@@ -162,16 +181,21 @@ class OnboardingDatePicker extends StatelessWidget {
   final String label;
   final DateTime? selectedDate;
   final Function(DateTime) onDateSelected;
+  final DateTime? maxDate;
+  final bool? isEdit;
 
   const OnboardingDatePicker({
     super.key,
     required this.label,
     required this.selectedDate,
     required this.onDateSelected,
+    this.maxDate,
+    this.isEdit,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = DeviceUtils.getDeviceType() == DeviceType.desktop;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -179,18 +203,25 @@ class OnboardingDatePicker extends StatelessWidget {
           label,
           style: TextStyle(
             fontSize: 12.appSp,
-            fontWeight: FontWeight.w600,
-            color: Colors.black,
+            fontWeight: FontWeight.w700,
+            color: isEdit == true ? Colors.white : Colors.black,
           ),
         ),
         SizedBox(height: 8.appSp),
         GestureDetector(
           onTap: () async {
+            // Calculate minimum date for 13 years age restriction
+            final minDate = DateTime.now()
+                .subtract(const Duration(days: 365 * 120)); // 120 years max age
+            final maxDate = this.maxDate ??
+                DateTime.now().subtract(
+                    const Duration(days: 365 * 13)); // 13 years minimum age
+
             final DateTime? picked = await showDatePicker(
               context: context,
-              initialDate: selectedDate ?? DateTime.now(),
-              firstDate: DateTime(1900),
-              lastDate: DateTime.now(),
+              initialDate: selectedDate ?? maxDate,
+              firstDate: minDate,
+              lastDate: maxDate,
             );
             if (picked != null) {
               onDateSelected(picked);
@@ -199,30 +230,32 @@ class OnboardingDatePicker extends StatelessWidget {
           child: Container(
             padding: EdgeInsets.symmetric(
               horizontal: 16.appSp,
-              vertical: 14.appSp,
+              vertical: isDesktop ? 7.appSp : 10.appSp,
             ),
             decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(12.appSp),
-            ),
+                borderRadius: BorderRadius.circular(6.appSp),
+                border: Border.all(color: Colors.grey, width: 0.0)),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.start,
+              spacing: 16,
               children: [
+                Icon(
+                  Icons.calendar_today,
+                  size: 18.appSp,
+                  color: Colors.grey.shade700,
+                ),
                 Text(
                   selectedDate != null
                       ? '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}'
                       : 'Select your date of birth',
                   style: TextStyle(
                     color: selectedDate != null
-                        ? Colors.black
+                        ? isEdit == true
+                            ? Colors.white
+                            : Colors.black
                         : Colors.grey.shade400,
-                    fontSize: 14.appSp,
+                    fontSize: 12.appSp,
                   ),
-                ),
-                Icon(
-                  Icons.calendar_today,
-                  size: 18.appSp,
-                  color: Colors.grey.shade700,
                 ),
               ],
             ),
@@ -239,6 +272,7 @@ class OnboardingNumberField extends StatelessWidget {
   final TextEditingController controller;
   final String? Function(String?)? validator;
   final void Function(String)? onChanged;
+  final bool? isEdit;
 
   const OnboardingNumberField({
     super.key,
@@ -247,6 +281,7 @@ class OnboardingNumberField extends StatelessWidget {
     required this.controller,
     this.validator,
     this.onChanged,
+    this.isEdit,
   });
 
   @override
@@ -258,8 +293,8 @@ class OnboardingNumberField extends StatelessWidget {
           label,
           style: TextStyle(
             fontSize: 12.appSp,
-            fontWeight: FontWeight.w600,
-            color: Colors.black,
+            fontWeight: FontWeight.w700,
+            color: isEdit == true ? Colors.white : Colors.black,
           ),
         ),
         SizedBox(height: 8.appSp),
@@ -271,21 +306,29 @@ class OnboardingNumberField extends StatelessWidget {
           ],
           validator: validator,
           onChanged: onChanged,
+          style: TextStyle(
+            fontSize: 12.appSp,
+            color: isEdit == true ? Colors.white : Colors.black,
+          ),
           decoration: InputDecoration(
             hintText: hintText,
             hintStyle: TextStyle(
               color: Colors.grey.shade400,
-              fontSize: 14.appSp,
+              fontSize: 12.appSp,
             ),
-            filled: true,
-            fillColor: Colors.grey.shade100,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.appSp),
-              borderSide: BorderSide.none,
+            enabledBorder: const OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.grey, width: 0.0),
             ),
+            focusedErrorBorder: const OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.redAccent, width: 0.0),
+            ),
+            focusedBorder: const OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.grey, width: 0.0),
+            ),
+            isDense: true,
             contentPadding: EdgeInsets.symmetric(
               horizontal: 16.appSp,
-              vertical: 14.appSp,
+              vertical: 10.appSp,
             ),
           ),
         ),

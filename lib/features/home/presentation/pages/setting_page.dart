@@ -1,622 +1,158 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:starcy/core/routes/app_router.dart';
-import 'package:starcy/utils/sp.dart';
+import 'package:starcy/utils/sp.dart' as sp;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class SettingPage extends StatelessWidget {
+import '../../../onboarding/presentation/onboarding_page.dart';
+import 'data_controls_page.dart';
+
+class SettingPage extends StatefulWidget {
   const SettingPage({super.key});
 
-  _edit(BuildContext context) {
-    context.router.push(OnboardingRoute(isEdit: true));
+  static const double _kDesktopBreakpoint = 550;
+
+  @override
+  State<SettingPage> createState() => _SettingPageState();
+}
+
+class _SettingPageState extends State<SettingPage> {
+  final PageController _pageController = PageController();
+
+  void _navigateToDataControls() {
+    _pageController.animateToPage(
+      1,
+      duration: const Duration(milliseconds: 100),
+      curve: Curves.easeInOut,
+    );
   }
 
-  _buildDesktopUI(BuildContext context) {
-    final user = Supabase.instance.client.auth.currentSession?.user;
-    final email = user?.email ?? 'N/A';
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: Container(
-          alignment: Alignment.center,
-          constraints: const BoxConstraints(
-            maxWidth: 520,
-          ),
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: -0.95.sw,
-                child: Container(
-                  width: 1.5.sw,
-                  height: 1.5.sw,
-                  decoration: BoxDecoration(
-                    gradient: RadialGradient(
-                      center: Alignment.center,
-                      radius: 0.75,
-                      colors: [
-                        const Color(0xff424952).withValues(alpha: 0.7),
-                        Colors.white.withValues(alpha: 0.5)
-                      ],
-                      stops: const [0.2, 1.0],
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: Container(
-                    margin: EdgeInsets.symmetric(horizontal: 8.appSp)
-                        .copyWith(top: 12.appSp, bottom: 0.appSp),
-                    decoration: BoxDecoration(
-                      color: Colors.black,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(28.appSp),
-                        topRight: Radius.circular(28.appSp),
-                      ),
-                      border: Border.all(
-                        color: Colors.grey.shade800.withOpacity(0.5),
-                        width: 0.5,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.3),
-                          blurRadius: 15,
-                          spreadRadius: 1,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Center(
-                            child: Padding(
-                              padding: EdgeInsets.only(
-                                  top: 32.appSp, bottom: 8.appSp),
-                              child: Stack(
-                                children: [
-                                  // Profile image
-                                  Container(
-                                    width: 64.appSp,
-                                    height: 64.appSp,
-                                    decoration: BoxDecoration(
-                                      color:
-                                          const Color.fromARGB(255, 44, 44, 46),
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: Colors.grey.shade800
-                                            .withOpacity(0.3),
-                                        width: 1,
-                                      ),
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        user?.email
-                                                ?.split('')[0]
-                                                .toUpperCase() ??
-                                            '',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16.appSp,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
+  void _navigateBack() {
+    _pageController.jumpTo(0);
+  }
 
-                          Center(
-                            child: FutureBuilder(
-                                future: Supabase.instance.client
-                                    .from('profiles')
-                                    .select('data')
-                                    .eq('id', user?.id ?? '')
-                                    .single(),
-                                builder: (context, response) {
-                                  final name = response.data?['data']?['name'];
-                                  return Text(
-                                    name ?? '',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 15.appSp,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  );
-                                }),
-                          ),
-
-                          // ACCOUNT SECTION
-                          Padding(
-                            padding: EdgeInsets.only(
-                                left: 16.appSp, top: 32.appSp, bottom: 4.appSp),
-                            child: Text(
-                              'ACCOUNT',
-                              style: TextStyle(
-                                color: Colors.grey.shade500,
-                                fontSize: 12.appSp,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                          Container(
-                            margin: EdgeInsets.symmetric(horizontal: 16.appSp),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(16.appSp),
-                            ),
-                            child: Column(
-                              children: [
-                                _buildSettingItem(
-                                  icon: Icons.email_outlined,
-                                  title: 'Email',
-                                  value: email,
-                                ),
-                                _buildSettingItem(
-                                  icon: Icons.add_circle_outline,
-                                  title: 'Subscription',
-                                  value: 'Free Plan',
-                                ),
-                                _buildSettingItem(
-                                  icon: Icons.person_outline,
-                                  title: 'Personalization',
-                                  showArrow: true,
-                                  onTap: () {
-                                    _edit(context);
-                                  },
-                                ),
-                                _buildSettingItem(
-                                  icon: Icons.data_usage_outlined,
-                                  title: 'Data Controls',
-                                  showArrow: true,
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          // SPEECH SECTION
-                          Padding(
-                            padding: EdgeInsets.only(
-                                left: 16.appSp, top: 24.appSp, bottom: 4.appSp),
-                            child: Text(
-                              'ABOUT',
-                              style: TextStyle(
-                                color: Colors.grey.shade500,
-                                fontSize: 12.appSp,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                          Container(
-                            margin: EdgeInsets.symmetric(horizontal: 16.appSp),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(16.appSp),
-                            ),
-                            child: Column(
-                              children: [
-                                _buildSettingItem(
-                                  icon: Icons.help_outline,
-                                  title: 'Help Center',
-                                  showArrow: false,
-                                ),
-                                _buildSettingItem(
-                                  icon: Icons.book,
-                                  title: 'Terms of Use',
-                                  showArrow: false,
-                                  onTap: () {
-                                    launchUrl(
-                                      Uri.parse(
-                                          'https://starcyindustries.com/terms-of-use'),
-                                    );
-                                  },
-                                ),
-                                _buildSettingItem(
-                                  icon: Icons.lock_rounded,
-                                  title: 'Privacy Policy',
-                                  showArrow: false,
-                                  onTap: () {
-                                    launchUrl(
-                                      Uri.parse(
-                                          'https://starcyindustries.com/privacy-policy'),
-                                    );
-                                  },
-                                ),
-                                _buildSettingItem(
-                                  icon: Icons.fiber_manual_record,
-                                  title: 'Version',
-                                  value: '1.2025.012',
-                                  showArrow: false,
-                                  isLast: true,
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          SizedBox(height: 16.appSp),
-                          Container(
-                            margin: EdgeInsets.symmetric(horizontal: 16.appSp),
-                            child: Column(
-                              children: [
-                                _buildSettingItem(
-                                  icon: Icons.login_rounded,
-                                  title: 'Log out',
-                                  showArrow: false,
-                                  isLast: true,
-                                  onTap: () async {
-                                    await Supabase.instance.client.auth
-                                        .signOut();
-                                    if (context.mounted) {
-                                      context.router.push(const LoginRoute());
-                                    }
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                          SizedBox(height: 16.appSp),
-                        ],
-                      ),
-                    ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+  void _edit(BuildContext context) {
+    _pageController.animateToPage(
+      2,
+      duration: const Duration(milliseconds: 100),
+      curve: Curves.easeInOut,
     );
+  }
+
+  void _handleLogout(BuildContext context) async {
+    try {
+      await Supabase.instance.client.auth.signOut();
+      if (context.mounted) {
+        context.router.push(const LoginRoute());
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to log out. Please try again.')),
+        );
+      }
+    }
+  }
+
+  void _launchURL(String url) async {
+    try {
+      await launchUrl(Uri.parse(url));
+    } catch (e) {
+      debugPrint('Failed to launch URL: $url');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final user = Supabase.instance.client.auth.currentSession?.user;
-    final email = user?.email ?? 'N/A';
-
-    if (1.sw > 550) return _buildDesktopUI(context);
-
+    final isDesktop = 1.sw > SettingPage._kDesktopBreakpoint;
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: -0.95.sw,
-            child: Container(
-              width: 1.5.sw,
-              height: 1.5.sw,
-              decoration: BoxDecoration(
-                gradient: RadialGradient(
-                  center: Alignment.center,
-                  radius: 0.75,
-                  colors: [
-                    const Color(0xff424952).withValues(alpha: 0.7),
-                    Colors.black.withValues(alpha: 0.5)
-                  ],
-                  stops: const [0.2, 1.0],
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0.sw,
-            child: SafeArea(
-              bottom: false,
-              child: Container(
-                margin: EdgeInsets.symmetric(horizontal: 8.appSp)
-                    .copyWith(top: 16.appSp, bottom: 16.appSp),
-                decoration: BoxDecoration(
-                  color: const Color(0xff1E1E1E),
-                  borderRadius: BorderRadius.circular(32),
-                  border: Border.all(
-                    color: Colors.grey.shade800.withOpacity(0.5),
-                    width: 0.5,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      blurRadius: 15,
-                      spreadRadius: 1,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Center(
-                        child: Padding(
-                          padding:
-                              EdgeInsets.only(top: 46.appSp, bottom: 8.appSp),
-                          child: Stack(
-                            children: [
-                              // Profile image
-                              Container(
-                                width: 64.appSp,
-                                height: 64.appSp,
-                                decoration: BoxDecoration(
-                                  color: const Color.fromARGB(255, 44, 44, 46),
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color:
-                                        Colors.grey.shade800.withOpacity(0.3),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    user?.email?.split('')[0].toUpperCase() ??
-                                        '',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16.appSp,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      Center(
-                        child: FutureBuilder(
-                            future: Supabase.instance.client
-                                .from('profiles')
-                                .select('data')
-                                .eq('id', user?.id ?? '')
-                                .single(),
-                            builder: (context, response) {
-                              final name = response.data?['data']?['name'];
-                              return Text(
-                                name ?? '',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 15.appSp,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                textAlign: TextAlign.center,
-                              );
-                            }),
-                      ),
-
-                      // ACCOUNT SECTION
-                      Padding(
-                        padding: EdgeInsets.only(
-                            left: 16.appSp, top: 32.appSp, bottom: 4.appSp),
-                        child: Text(
-                          'ACCOUNT',
-                          style: TextStyle(
-                            color: Colors.grey.shade500,
-                            fontSize: 12.appSp,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                      Container(
-                        margin: EdgeInsets.symmetric(horizontal: 16.appSp),
-                        decoration: BoxDecoration(
-                          color: const Color(0xff1E1E1E),
-                          borderRadius: BorderRadius.circular(16.appSp),
-                        ),
-                        child: Column(
-                          children: [
-                            _buildSettingItem(
-                              icon: Icons.email_outlined,
-                              title: 'Email',
-                              value: email,
-                            ),
-                            _buildSettingItem(
-                              icon: Icons.add_circle_outline,
-                              title: 'Subscription',
-                              value: 'Free Plan',
-                            ),
-                            _buildSettingItem(
-                              icon: Icons.person_outline,
-                              title: 'Personalization',
-                              showArrow: true,
-                              onTap: () {
-                                _edit(context);
-                              },
-                            ),
-                            _buildSettingItem(
-                              icon: Icons.data_usage_outlined,
-                              title: 'Data Controls',
-                              showArrow: true,
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // SPEECH SECTION
-                      Padding(
-                        padding: EdgeInsets.only(
-                            left: 16.appSp, top: 24.appSp, bottom: 4.appSp),
-                        child: Text(
-                          'ABOUT',
-                          style: TextStyle(
-                            color: Colors.grey.shade500,
-                            fontSize: 12.appSp,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                      Container(
-                        margin: EdgeInsets.symmetric(horizontal: 16.appSp),
-                        decoration: BoxDecoration(
-                          color: const Color(0xff1E1E1E),
-                          borderRadius: BorderRadius.circular(16.appSp),
-                        ),
-                        child: Column(
-                          children: [
-                            _buildSettingItem(
-                              icon: Icons.help_outline,
-                              title: 'Help Center',
-                              showArrow: false,
-                            ),
-                            _buildSettingItem(
-                              icon: Icons.book,
-                              title: 'Terms of Use',
-                              showArrow: false,
-                              onTap: () {
-                                launchUrl(
-                                  Uri.parse(
-                                      'https://starcyindustries.com/terms-of-use'),
-                                );
-                              },
-                            ),
-                            _buildSettingItem(
-                              icon: Icons.lock_rounded,
-                              title: 'Privacy Policy',
-                              showArrow: false,
-                              onTap: () {
-                                launchUrl(
-                                  Uri.parse(
-                                      'https://starcyindustries.com/privacy-policy'),
-                                );
-                              },
-                            ),
-                            _buildSettingItem(
-                              icon: Icons.fiber_manual_record,
-                              title: 'Version',
-                              value: '1.2025.012',
-                              showArrow: false,
-                              isLast: true,
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      SizedBox(height: 36.appSp),
-                      Container(
-                        margin: EdgeInsets.symmetric(horizontal: 16.appSp),
-                        child: Column(
-                          children: [
-                            _buildSettingItem(
-                              icon: Icons.login_rounded,
-                              title: 'Log out',
-                              showArrow: false,
-                              isLast: true,
-                              onTap: () async {
-                                await Supabase.instance.client.auth.signOut();
-                                if (context.mounted) {
-                                  context.router.push(const LoginRoute());
-                                }
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      SizedBox(height: 24.appSp),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-// //
-        ],
+      backgroundColor: isDesktop ? Colors.white : Colors.black,
+      body: _SettingsContent(
+        isDesktop: isDesktop,
+        onEdit: () => _edit(context),
+        onLogout: () => _handleLogout(context),
+        onLaunchURL: _launchURL,
+        onDataControlsTap: _navigateToDataControls,
+        onBack: _navigateBack,
+        pageController: _pageController,
       ),
     );
   }
+}
 
-  Widget _buildSettingItem({
-    required IconData icon,
-    required String title,
-    String? value,
-    bool showArrow = true,
-    bool isLast = false,
-    Function()? onTap,
-  }) {
-    return Container(
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () {
-            onTap?.call();
-          },
-          child: Padding(
-            padding:
-                EdgeInsets.symmetric(horizontal: 0.appSp, vertical: 8.appSp),
-            child: Row(
-              children: [
-                // Leading icon
-                Container(
-                  padding: EdgeInsets.all(4.appSp),
-                  decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 44, 44, 46),
-                    borderRadius: BorderRadius.circular(8.appSp),
-                  ),
-                  child: Icon(
-                    icon,
-                    color: Colors.grey.shade400,
-                    size: 20.appSp,
-                    weight: 350,
-                  ),
-                ),
-                SizedBox(width: 16.appSp),
+class _SettingsContent extends StatelessWidget {
+  const _SettingsContent({
+    required this.isDesktop,
+    required this.onEdit,
+    required this.onLogout,
+    required this.onLaunchURL,
+    required this.onDataControlsTap,
+    required this.pageController,
+    required this.onBack,
+  });
 
-                // Title
-                Text(
-                  title,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14.appSp,
-                  ),
-                ),
-                SizedBox(width: 16.appSp),
-                // Value and arrow
-                if (value != null || showArrow)
-                  Expanded(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        if (value != null)
-                          Expanded(
-                            child: Text(
-                              value,
-                              style: TextStyle(
-                                color: Colors.grey.shade400,
-                                fontSize: 14.appSp,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.right,
-                            ),
-                          ),
-                        if (showArrow)
-                          Padding(
-                            padding: EdgeInsets.only(left: 4.appSp),
-                            child: Icon(
-                              Icons.chevron_right,
-                              color: Colors.grey.shade600,
-                              size: 22.appSp,
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-              ],
+  final bool isDesktop;
+  final VoidCallback onEdit;
+  final VoidCallback onLogout;
+  final void Function(String) onLaunchURL;
+  final VoidCallback onDataControlsTap;
+  final PageController pageController;
+  final VoidCallback onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        _BackgroundGradient(isDesktop: isDesktop),
+        Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 400),
+            child: _SettingsCard(
+              isDesktop: isDesktop,
+              onEdit: onEdit,
+              onLogout: onLogout,
+              onLaunchURL: onLaunchURL,
+              onDataControlsTap: onDataControlsTap,
+              pageController: pageController,
+              onBack: onBack,
             ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _BackgroundGradient extends StatelessWidget {
+  const _BackgroundGradient({required this.isDesktop});
+
+  final bool isDesktop;
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: isDesktop ? -0.95.sw : -0.95.sw,
+      child: Container(
+        width: 1.5.sw,
+        height: 1.5.sw,
+        decoration: BoxDecoration(
+          gradient: RadialGradient(
+            center: Alignment.center,
+            radius: 0.75,
+            colors: [
+              isDesktop
+                  ? Colors.transparent
+                  : const Color(0xff424952).withValues(alpha: 0.7),
+              isDesktop
+                  ? Colors.transparent
+                  : (Colors.black).withValues(alpha: 0.5)
+            ],
+            stops: const [0.2, 1.0],
           ),
         ),
       ),
@@ -624,66 +160,455 @@ class SettingPage extends StatelessWidget {
   }
 }
 
-Widget _buildToggleSettingItem({
-  required IconData icon,
-  required String title,
-  required bool initialValue,
-  bool isLast = false,
-}) {
-  return StatefulBuilder(
-    builder: (context, setState) {
-      return Container(
-        decoration: BoxDecoration(
-          border: isLast
-              ? null
-              : Border(
-                  bottom: BorderSide(
-                    color: Colors.grey.shade800.withOpacity(0.5),
-                    width: 0.5,
-                  ),
-                ),
+class _SettingsCard extends StatelessWidget {
+  const _SettingsCard({
+    required this.isDesktop,
+    required this.onEdit,
+    required this.onLogout,
+    required this.onLaunchURL,
+    required this.onDataControlsTap,
+    required this.pageController,
+    required this.onBack,
+  });
+
+  final bool isDesktop;
+  final VoidCallback onEdit;
+  final VoidCallback onLogout;
+  final void Function(String) onLaunchURL;
+  final VoidCallback onDataControlsTap;
+  final PageController pageController;
+  final VoidCallback onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      bottom: !isDesktop,
+      child: _SettingsCardContent(
+        isDesktop: isDesktop,
+        onEdit: onEdit,
+        onLogout: onLogout,
+        onLaunchURL: onLaunchURL,
+        onDataControlsTap: onDataControlsTap,
+        pageController: pageController,
+        onBack: onBack,
+      ),
+    );
+  }
+}
+
+class _SettingsCardContent extends StatelessWidget {
+  const _SettingsCardContent({
+    required this.isDesktop,
+    required this.onEdit,
+    required this.onLogout,
+    required this.onLaunchURL,
+    required this.onDataControlsTap,
+    required this.pageController,
+    required this.onBack,
+  });
+
+  final bool isDesktop;
+  final VoidCallback onEdit;
+  final VoidCallback onLogout;
+  final void Function(String) onLaunchURL;
+  final VoidCallback onDataControlsTap;
+  final PageController pageController;
+  final VoidCallback onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        SizedBox(
+          height: isDesktop ? 300.appSp : 60.appSp,
+          child: Image.asset(
+            "assets/images/starcyindustries.png",
+            color: isDesktop ? Colors.black : Colors.white,
+          ),
         ),
-        child: GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onTap: () {},
-          child: Padding(
-            padding:
-                EdgeInsets.symmetric(horizontal: 16.appSp, vertical: 12.appSp),
-            child: Row(
-              children: [
-                // Leading icon
-                Icon(
-                  icon,
-                  color: Colors.white,
-                  size: 24.appSp,
-                  weight: 350,
+        Expanded(
+          child: Container(
+            margin: EdgeInsets.symmetric(horizontal: 8.appSp).copyWith(
+                top: isDesktop ? 12.appSp : 16.appSp,
+                bottom: isDesktop ? 0.appSp : 16.appSp),
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            decoration: BoxDecoration(
+              color: isDesktop ? Colors.black : const Color(0xff1E1E1E),
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(isDesktop ? 28.appSp : 32),
+                bottom: Radius.circular(isDesktop ? 0 : 32),
+              ),
+              border: Border.all(
+                color: Colors.grey.shade800.withValues(alpha: 0.5),
+                width: 0.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  blurRadius: 15,
+                  spreadRadius: 1,
+                  offset: const Offset(0, 3),
                 ),
-                SizedBox(width: 16.appSp),
-
-                // Title
-                Expanded(
-                  child: Text(
-                    title,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14.appSp,
-                    ),
+              ],
+            ),
+            child: PageView(
+              controller: pageController,
+              physics: const NeverScrollableScrollPhysics(),
+              children: [
+                SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      _ProfileSection(),
+                      _AccountSection(
+                          onEdit: onEdit, onDataControlsTap: onDataControlsTap),
+                      _AboutSection(onLaunchURL: onLaunchURL),
+                      _LogoutSection(onLogout: onLogout),
+                      SizedBox(height: isDesktop ? 16.appSp : 24.appSp),
+                    ],
                   ),
                 ),
-
-                // Toggle switch
-                CupertinoSwitch(
-                  value: initialValue,
-                  onChanged: (value) {
-                    setState(() {});
-                  },
-                  activeTrackColor: const Color(0xFF34C759),
+                DataControlsPage(
+                  isDesktop: isDesktop,
+                  onPressed: onBack,
+                ),
+                OnboardingPage(
+                  isEdit: true,
+                  onBack: onBack,
                 ),
               ],
             ),
           ),
         ),
-      );
-    },
-  );
+      ],
+    );
+  }
+}
+
+class _ProfileSection extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final user = Supabase.instance.client.auth.currentSession?.user;
+
+    return Column(
+      children: [
+        Center(
+          child: Padding(
+            padding: EdgeInsets.only(top: 16.appSp, bottom: 8.appSp),
+            child: _ProfileAvatar(user: user),
+          ),
+        ),
+        _ProfileName(userId: user?.id),
+      ],
+    );
+  }
+}
+
+class _ProfileAvatar extends StatelessWidget {
+  const _ProfileAvatar({required this.user});
+
+  final User? user;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 64.appSp,
+      height: 64.appSp,
+      decoration: BoxDecoration(
+        color: const Color.fromARGB(255, 44, 44, 46),
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: Colors.grey.shade800.withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+      child: Center(
+        child: Text(
+          user?.email?.split('')[0].toUpperCase() ?? '',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 16.appSp,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ProfileName extends StatelessWidget {
+  const _ProfileName({required this.userId});
+
+  final String? userId;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: FutureBuilder(
+        future: Supabase.instance.client
+            .from('profiles')
+            .select('data')
+            .eq('id', userId ?? '')
+            .single(),
+        builder: (context, response) {
+          final name = response.data?['data']?['name'];
+          return Text(
+            name ?? '',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 15.appSp,
+              fontWeight: FontWeight.w600,
+            ),
+            textAlign: TextAlign.center,
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _AccountSection extends StatelessWidget {
+  const _AccountSection({
+    required this.onEdit,
+    required this.onDataControlsTap,
+  });
+
+  final VoidCallback onEdit;
+  final VoidCallback onDataControlsTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final user = Supabase.instance.client.auth.currentSession?.user;
+    final email = user?.email ?? 'N/A';
+
+    return _SettingsSection(
+      title: 'ACCOUNT',
+      children: [
+        SettingItem(
+          icon: Icons.email_outlined,
+          title: 'Email',
+          value: email,
+          showArrow: false,
+        ),
+        const SettingItem(
+          icon: Icons.add_circle_outline,
+          title: 'Subscription',
+          value: 'Free Plan',
+          showArrow: false,
+        ),
+        SettingItem(
+          icon: Icons.person_outline,
+          title: 'Personalization',
+          showArrow: true,
+          onTap: onEdit,
+        ),
+        SettingItem(
+          icon: Icons.data_usage_outlined,
+          title: 'Data Controls',
+          showArrow: true,
+          onTap: onDataControlsTap,
+        ),
+      ],
+    );
+  }
+}
+
+class _AboutSection extends StatelessWidget {
+  const _AboutSection({required this.onLaunchURL});
+
+  final void Function(String) onLaunchURL;
+
+  @override
+  Widget build(BuildContext context) {
+    return _SettingsSection(
+      title: 'ABOUT',
+      children: [
+        const SettingItem(
+          icon: Icons.help_outline,
+          title: 'Help Center',
+          showArrow: false,
+        ),
+        SettingItem(
+          icon: Icons.book,
+          title: 'Terms of Use',
+          showArrow: false,
+          onTap: () => onLaunchURL('https://starcyindustries.com/terms-of-use'),
+        ),
+        SettingItem(
+          icon: Icons.lock_rounded,
+          title: 'Privacy Policy',
+          showArrow: false,
+          onTap: () =>
+              onLaunchURL('https://starcyindustries.com/privacy-policy'),
+        ),
+        const SettingItem(
+          icon: Icons.fiber_manual_record,
+          title: 'Version',
+          value: '1.2025.012',
+          showArrow: false,
+          isLast: true,
+        ),
+      ],
+    );
+  }
+}
+
+class _LogoutSection extends StatelessWidget {
+  const _LogoutSection({required this.onLogout});
+
+  final VoidCallback onLogout;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 32.appSp),
+      child: Column(
+        children: [
+          SettingItem(
+            icon: Icons.login_rounded,
+            title: 'Log out',
+            showArrow: false,
+            isLast: true,
+            onTap: onLogout,
+            color: Colors.redAccent,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SettingsSection extends StatelessWidget {
+  const _SettingsSection({
+    required this.title,
+    required this.children,
+  });
+
+  final String title;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              title,
+              style: TextStyle(
+                color: Colors.grey.shade500,
+                fontSize: 14.appSp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                color: Colors.black,
+              ),
+              child: Column(children: children)),
+        ],
+      ),
+    );
+  }
+}
+
+class SettingItem extends StatelessWidget {
+  const SettingItem({
+    super.key,
+    required this.icon,
+    required this.title,
+    this.value,
+    this.showArrow = true,
+    this.isLast = false,
+    this.onTap,
+    this.color,
+  });
+
+  final IconData icon;
+  final String title;
+  final String? value;
+  final bool showArrow;
+  final bool isLast;
+  final VoidCallback? onTap;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 8.appSp),
+          child: Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(4.appSp),
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(255, 44, 44, 46),
+                  borderRadius: BorderRadius.circular(8.appSp),
+                ),
+                child: Icon(
+                  icon,
+                  color: color ?? Colors.grey.shade400,
+                  size: 20.appSp,
+                  weight: 350,
+                ),
+              ),
+              SizedBox(width: 16.appSp),
+              Text(
+                title,
+                style: TextStyle(
+                  color: color ?? Colors.white,
+                  fontSize: 14.appSp,
+                ),
+              ),
+              if (value != null || showArrow) ...[
+                SizedBox(width: 16.appSp),
+                Expanded(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      if (value != null)
+                        Expanded(
+                          child: Text(
+                            value!,
+                            style: TextStyle(
+                              color: Colors.grey.shade400,
+                              fontSize: 14.appSp,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.right,
+                          ),
+                        ),
+                      if (showArrow)
+                        Padding(
+                          padding: EdgeInsets.only(left: 4.appSp),
+                          child: Icon(
+                            Icons.chevron_right,
+                            color: Colors.grey.shade600,
+                            size: 22.appSp,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

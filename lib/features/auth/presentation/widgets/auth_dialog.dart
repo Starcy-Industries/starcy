@@ -1,8 +1,8 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:starcy/core/routes/app_router.dart';
 import 'package:starcy/utils/sp.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:auto_route/auto_route.dart';
-import 'package:starcy/core/routes/app_router.dart';
 
 class AuthDialog extends StatefulWidget {
   const AuthDialog({
@@ -51,7 +51,8 @@ class _AuthDialogState extends State<AuthDialog> {
           email: _emailController.text.trim(),
           password: _passwordController.text,
         );
-
+        print("response.user?.toJson() ${response.user?.toJson()}");
+        print("response.session?.toJson() ${response.session?.toJson()}");
         if (response.user != null && mounted) {
           try {
             final res = await supabase

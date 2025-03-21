@@ -6,13 +6,18 @@ import 'package:starcy/features/onboarding/presentation/models/form_steps.dart';
 import 'package:starcy/features/onboarding/presentation/models/onboarding_model.dart';
 import 'package:starcy/features/onboarding/presentation/widgets/form_fields.dart';
 import 'package:starcy/features/onboarding/presentation/widgets/step_navigation.dart';
+import 'package:starcy/utils/permission_manager.dart';
 import 'package:starcy/utils/sp.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../utils/permission_dialog.dart';
+
 @RoutePage()
 class OnboardingPage extends StatefulWidget {
-  const OnboardingPage({super.key, @PathParam('id') this.isEdit});
+  const OnboardingPage({super.key, @PathParam('id') this.isEdit, this.onBack});
+
   final bool? isEdit;
+  final VoidCallback? onBack;
 
   @override
   State<OnboardingPage> createState() => _OnboardingPageState();
@@ -53,6 +58,32 @@ class _OnboardingPageState extends State<OnboardingPage> {
   String _gender = '';
   String _timeZone = '';
   bool _isLoadingTimezone = false;
+
+  // Add relationship status options
+  final List<String> _relationshipStatusOptions = [
+    "Single",
+    "In a Relationship",
+    "Engaged",
+    "Married",
+    "Separated",
+    "Divorced",
+    "Widowed",
+    "It's Complicated",
+    "Prefer Not to Say",
+  ];
+
+  // Add age calculation function
+  int? calculateAge(DateTime? birthDate) {
+    if (birthDate == null) return null;
+
+    final today = DateTime.now();
+    var age = today.year - birthDate.year;
+    if (today.month < birthDate.month ||
+        (today.month == birthDate.month && today.day < birthDate.day)) {
+      age--;
+    }
+    return age;
+  }
 
   // Gender options
   final List<String> _genderOptions = ['Male', 'Female', 'Other'];
@@ -259,8 +290,13 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
       if (mounted) {
         if (widget.isEdit == true) {
-          context.router.pop();
+          widget.onBack!();
         } else {
+          bool isAllowed =
+              await PermissionDialog.showPermissionRationaleDialog(context);
+          if (isAllowed) {
+            PermissionManager.requestPermissions(context);
+          }
           context.router.replace(const UserTermsRoute());
         }
       }
@@ -314,6 +350,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
           child: OnboardingTextField(
             label: 'Name',
             hintText: 'Enter your name',
+            isEdit: widget.isEdit,
             controller: _nameController,
             validator: (value) {
               if (value?.trim() == null || value?.trim().isEmpty == true) {
@@ -328,6 +365,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
           padding: EdgeInsets.only(bottom: 12.appSp),
           child: OnboardingNumberField(
             label: 'Age',
+            isEdit: widget.isEdit,
             hintText: 'Enter your age',
             controller: _ageController,
           ),
@@ -340,6 +378,10 @@ class _OnboardingPageState extends State<OnboardingPage> {
               if (_dateOfBirth == null) {
                 return 'Please select your date of birth';
               }
+              final age = calculateAge(_dateOfBirth);
+              if (age != null && age < 13) {
+                return 'You must be at least 13 years old';
+              }
               return null;
             },
             initialValue: _dateOfBirth,
@@ -349,13 +391,21 @@ class _OnboardingPageState extends State<OnboardingPage> {
                 children: [
                   OnboardingDatePicker(
                     label: 'Date Of Birth',
+                    isEdit: widget.isEdit,
                     selectedDate: _dateOfBirth,
                     onDateSelected: (date) {
                       setState(() {
                         _dateOfBirth = date;
+
+                        final calculatedAge = calculateAge(date);
+                        if (calculatedAge != null) {
+                          _ageController.text = calculatedAge.toString();
+                        }
                       });
                       state.didChange(date);
                     },
+                    // Add maxDate to restrict future dates
+                    maxDate: DateTime(DateTime.now().year - 13),
                   ),
                   if (state.hasError)
                     Padding(
@@ -379,6 +429,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
           child: OnboardingDropdown(
             label: 'Gender',
             value: _gender,
+            isEdit: widget.isEdit,
             items: _genderOptions,
             onChanged: (value) {
               if (value != null) {
@@ -401,6 +452,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
           child: OnboardingTextField(
             label: 'Location',
             hintText: 'Enter your city',
+            isEdit: widget.isEdit,
             controller: _locationController,
             onChanged: (value) async {
               if (value.length > 2) {
@@ -436,28 +488,29 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   'Time Zone',
                   style: TextStyle(
                     fontSize: 12.appSp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black,
+                    fontWeight: FontWeight.w700,
+                    color: widget.isEdit == true ? Colors.white : Colors.black,
                   ),
                 ),
                 SizedBox(height: 8.appSp),
                 Container(
                   padding: EdgeInsets.symmetric(
                     horizontal: 16.appSp,
-                    vertical: 14.appSp,
+                    vertical: 8.appSp,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(12.appSp),
-                  ),
+                      borderRadius: BorderRadius.circular(6.appSp),
+                      border: Border.all(color: Colors.grey, width: 0.0)),
                   child: Row(
                     children: [
                       Expanded(
                         child: Text(
                           _timeZone,
                           style: TextStyle(
-                            fontSize: 14.appSp,
-                            color: Colors.black,
+                            fontSize: 12.appSp,
+                            color: widget.isEdit == true
+                                ? Colors.white
+                                : Colors.black,
                           ),
                         ),
                       ),
@@ -484,8 +537,18 @@ class _OnboardingPageState extends State<OnboardingPage> {
           padding: EdgeInsets.only(bottom: 12.appSp),
           child: OnboardingTextField(
             label: 'Hobbies',
+            isEdit: widget.isEdit,
             hintText: 'What do you enjoy doing?',
             controller: _hobbiesController,
+            validator: (value) {
+              if (value?.trim().isEmpty ?? true) {
+                return 'Please enter at least one hobby';
+              }
+              if (value!.trim().length < 3) {
+                return 'Please provide more detail about your hobbies';
+              }
+              return null;
+            },
           ),
         );
       case 'learningGoals':
@@ -493,6 +556,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
           padding: EdgeInsets.only(bottom: 12.appSp),
           child: OnboardingTextField(
             label: 'Learning Goals',
+            isEdit: widget.isEdit,
             hintText: 'What do you want to learn?',
             controller: _learningGoalsController,
           ),
@@ -502,6 +566,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
           padding: EdgeInsets.only(bottom: 12.appSp),
           child: OnboardingTextField(
             label: 'Languages',
+            isEdit: widget.isEdit,
             hintText: 'What languages do you speak?',
             controller: _languagesController,
           ),
@@ -511,8 +576,18 @@ class _OnboardingPageState extends State<OnboardingPage> {
           padding: EdgeInsets.only(bottom: 12.appSp),
           child: OnboardingTextField(
             label: 'Daily Routine',
+            isEdit: widget.isEdit,
             hintText: 'Describe your typical day',
             controller: _dailyRoutineController,
+            validator: (value) {
+              if (value?.trim().isEmpty ?? true) {
+                return 'Please describe your daily routine';
+              }
+              if (value!.trim().length < 10) {
+                return 'Please provide more detail about your daily routine';
+              }
+              return null;
+            },
           ),
         );
       case 'exerciseHabits':
@@ -520,6 +595,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
           padding: EdgeInsets.only(bottom: 12.appSp),
           child: OnboardingTextField(
             label: 'Exercise Habits',
+            isEdit: widget.isEdit,
             hintText: 'How often do you exercise?',
             controller: _exerciseHabitsController,
           ),
@@ -529,6 +605,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
           padding: EdgeInsets.only(bottom: 12.appSp),
           child: OnboardingTextField(
             label: 'Caffeine Consumption',
+            isEdit: widget.isEdit,
             hintText: 'How much caffeine do you consume daily?',
             controller: _caffeineConsumptionController,
           ),
@@ -539,7 +616,17 @@ class _OnboardingPageState extends State<OnboardingPage> {
           child: OnboardingTextField(
             label: 'Profession',
             hintText: 'What is your profession?',
+            isEdit: widget.isEdit,
             controller: _professionController,
+            validator: (value) {
+              if (value?.trim().isEmpty ?? true) {
+                return 'Please enter your profession';
+              }
+              if (value!.trim().length < 3) {
+                return 'Please provide a valid profession';
+              }
+              return null;
+            },
           ),
         );
       case 'workStyle':
@@ -547,6 +634,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
           padding: EdgeInsets.only(bottom: 12.appSp),
           child: OnboardingTextField(
             label: 'Work Style',
+            isEdit: widget.isEdit,
             hintText: 'Describe your work style',
             controller: _workStyleController,
           ),
@@ -556,6 +644,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
           padding: EdgeInsets.only(bottom: 12.appSp),
           child: OnboardingTextField(
             label: 'Career Goals',
+            isEdit: widget.isEdit,
             hintText: 'What are your career goals?',
             controller: _careerGoalsController,
           ),
@@ -565,8 +654,18 @@ class _OnboardingPageState extends State<OnboardingPage> {
           padding: EdgeInsets.only(bottom: 12.appSp),
           child: OnboardingTextField(
             label: 'Life Goals',
+            isEdit: widget.isEdit,
             hintText: 'What are your life goals?',
             controller: _lifeGoalsController,
+            validator: (value) {
+              if (value?.trim().isEmpty ?? true) {
+                return 'Please enter your life goals';
+              }
+              if (value!.trim().length < 10) {
+                return 'Please provide more detail about your life goals';
+              }
+              return null;
+            },
           ),
         );
       case 'learningPriorities':
@@ -574,6 +673,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
           padding: EdgeInsets.only(bottom: 12.appSp),
           child: OnboardingTextField(
             label: 'Learning Priorities',
+            isEdit: widget.isEdit,
             hintText: 'What are your learning priorities?',
             controller: _learningPrioritiesController,
           ),
@@ -583,6 +683,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
           padding: EdgeInsets.only(bottom: 12.appSp),
           child: OnboardingTextField(
             label: 'Motivators',
+            isEdit: widget.isEdit,
             hintText: 'What motivates you?',
             controller: _motivatorsController,
           ),
@@ -592,8 +693,18 @@ class _OnboardingPageState extends State<OnboardingPage> {
           padding: EdgeInsets.only(bottom: 12.appSp),
           child: OnboardingTextField(
             label: 'Health Goals',
+            isEdit: widget.isEdit,
             hintText: 'What are your health goals?',
             controller: _healthGoalsController,
+            validator: (value) {
+              if (value?.trim().isEmpty ?? true) {
+                return 'Please enter your health goals';
+              }
+              if (value!.trim().length < 10) {
+                return 'Please provide more detail about your health goals';
+              }
+              return null;
+            },
           ),
         );
       case 'allergies':
@@ -601,6 +712,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
           padding: EdgeInsets.only(bottom: 12.appSp),
           child: OnboardingTextField(
             label: 'Allergies',
+            isEdit: widget.isEdit,
             hintText: 'Do you have any allergies?',
             controller: _allergiesController,
           ),
@@ -610,6 +722,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
           padding: EdgeInsets.only(bottom: 12.appSp),
           child: OnboardingTextField(
             label: 'Wellness Practices',
+            isEdit: widget.isEdit,
             hintText: 'What wellness practices do you follow?',
             controller: _wellnessPracticesController,
           ),
@@ -617,10 +730,24 @@ class _OnboardingPageState extends State<OnboardingPage> {
       case 'relationshipStatus':
         return Padding(
           padding: EdgeInsets.only(bottom: 12.appSp),
-          child: OnboardingTextField(
+          child: OnboardingDropdown(
             label: 'Relationship Status',
-            hintText: 'What is your relationship status?',
-            controller: _relationshipStatusController,
+            value: _relationshipStatusController.text,
+            isEdit: widget.isEdit,
+            items: _relationshipStatusOptions,
+            onChanged: (value) {
+              if (value != null) {
+                setState(() {
+                  _relationshipStatusController.text = value;
+                });
+              }
+            },
+            validator: (_) {
+              if (_relationshipStatusController.text.isEmpty) {
+                return 'Please select your relationship status';
+              }
+              return null;
+            },
           ),
         );
       case 'familyDetails':
@@ -628,6 +755,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
           padding: EdgeInsets.only(bottom: 12.appSp),
           child: OnboardingTextField(
             label: 'Family Details',
+            isEdit: widget.isEdit,
             hintText: 'Tell us about your family',
             controller: _familyDetailsController,
           ),
@@ -637,6 +765,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
           padding: EdgeInsets.only(bottom: 12.appSp),
           child: OnboardingTextField(
             label: 'Social Engagement',
+            isEdit: widget.isEdit,
             hintText: 'How do you engage socially?',
             controller: _socialEngagementController,
           ),
@@ -648,73 +777,131 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SafeArea(
-              child: Center(
-                child: Container(
-                  alignment: Alignment.center,
-                  constraints: const BoxConstraints(
-                    maxWidth: 550,
-                  ),
-                  child: Column(
-                    children: [
-                      // Header with logo and step title
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 24.appSp),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              height: 32.appSp,
-                              child: Image.asset(
-                                'assets/images/starcy_logo.png',
-                              ),
-                            ),
-                            Text(
-                              'Make your first Artificial\nIntelligence Friend, StarCy',
-                              style: TextStyle(
-                                fontSize: 18.appSp,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.black,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
+    final isDesktop = DeviceUtils.getDeviceType() == DeviceType.desktop;
+    return widget.isEdit == true
+        ? _centerFormWidget()
+        : Scaffold(
+            backgroundColor: Colors.white,
+            body: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : SafeArea(
+                    child: Container(
+                      alignment: Alignment.center,
+                      constraints: const BoxConstraints(
+                        maxWidth: 450,
                       ),
-                      // Form content
-                      Expanded(
-                        child: Form(
-                          key: _formKey,
-                          child: SingleChildScrollView(
-                            child: _buildCurrentStep(),
+                      child: Column(
+                        crossAxisAlignment: (isDesktop)
+                            ? CrossAxisAlignment.center
+                            : CrossAxisAlignment.start,
+                        mainAxisAlignment: (isDesktop)
+                            ? MainAxisAlignment.center
+                            : MainAxisAlignment.start,
+                        children: [
+                          if (isDesktop) SizedBox(height: 65.appSp),
+                          Padding(
+                            padding:
+                                EdgeInsets.symmetric(horizontal: 24.appSp),
+                            child: Column(
+                              crossAxisAlignment: (isDesktop)
+                                  ? CrossAxisAlignment.center
+                                  : CrossAxisAlignment.start,
+                              mainAxisAlignment: (isDesktop)
+                                  ? MainAxisAlignment.center
+                                  : MainAxisAlignment.start,
+                              children: [
+                                SizedBox(
+                                  height: 32.appSp,
+                                  child: Image.asset(
+                                    'assets/images/starcy_logo.png',
+                                  ),
+                                ),
+                                Text(
+                                  'Make your first Artificial\nIntelligence Friend, StarCy',
+                                  style: TextStyle(
+                                    fontSize: 18.appSp,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.black,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ),
-                      // Navigation buttons
-                      _isLoading
-                          ? Padding(
-                              padding: EdgeInsets.all(24.appSp).copyWith(top: 0.appSp),
-                              child: const CircularProgressIndicator(),
-                            )
-                          : StepNavigation(
-                              currentStep: _currentStep,
-                              totalSteps: FormSteps.steps.length,
-                              onPrevious: _previousStep,
-                              onNext: _nextStep,
-                              isLastStep:
-                                  _currentStep == FormSteps.steps.length - 1,
+                          // Form content
+                          Flexible(
+                            child: Form(
+                              key: _formKey,
+                              child: SingleChildScrollView(
+                                child: _buildCurrentStep(),
+                              ),
                             ),
-                      SizedBox(height: 8.appSp),
-                    ],
+                          ),
+                          // Navigation buttons
+                          _isLoading
+                              ? Padding(
+                                  padding: EdgeInsets.all(24.appSp)
+                                      .copyWith(top: 0.appSp),
+                                  child: const CircularProgressIndicator(),
+                                )
+                              : StepNavigation(
+                                  currentStep: _currentStep,
+                                  totalSteps: FormSteps.steps.length,
+                                  onPrevious: _previousStep,
+                                  onNext: _nextStep,
+                                  isEdit: widget.isEdit,
+                                  isLastStep: _currentStep ==
+                                      FormSteps.steps.length - 1,
+                                ),
+                          if (isDesktop) SizedBox(height: 65.appSp),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
+          );
+  }
+
+  Widget _centerFormWidget() {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              BackButton(
+                color: Colors.white,
+                onPressed: widget.onBack,
               ),
+              Text(
+                "Personalization",
+                style: TextStyle(color: Colors.white, fontSize: 18.appSp),
+              )
+            ],
+          ),
+        ),
+        Flexible(
+          child: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              child: _buildCurrentStep(),
             ),
+          ),
+        ),
+        // Navigation buttons
+        _isLoading
+            ? Padding(
+                padding: EdgeInsets.all(24.appSp).copyWith(top: 0.appSp),
+                child: const CircularProgressIndicator(),
+              )
+            : StepNavigation(
+                currentStep: _currentStep,
+                totalSteps: FormSteps.steps.length,
+                onPrevious: _previousStep,
+                onNext: _nextStep,
+                isLastStep: _currentStep == FormSteps.steps.length - 1,
+                isEdit: widget.isEdit,
+              )
+      ],
     );
   }
 }

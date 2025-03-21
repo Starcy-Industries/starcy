@@ -22,6 +22,19 @@ dependencies:
   google_sign_in: 6.3.0
   url_launcher: 6.3.1
   cupertino_modal_sheet: 1.1.0
+  flutter_dotenv:
+  # Permission handling
+  permission_handler: ^11.4.0
+  # Background processing
+  workmanager:
+    git:
+      url: https://github.com/fluttercommunity/flutter_workmanager.git
+      path: workmanager
+      ref: main
+  # Device info and battery optimization
+  device_info_plus: ^9.1.2
+  flutter_local_notifications: ^19.0.0
+  firebase_core: ^3.12.1
 
 dev_dependencies:
   flutter_test:
@@ -36,37 +49,26 @@ flutter:
     - assets/images/
     - assets/images/google_logo.png
     - assets/images/apple_logo.png
+    - .env
 
   fonts:
-    - family: OpenSans
+    - family: Inter
       fonts:
-        - asset: assets/fonts/OpenSans-Light.ttf
+        - asset: assets/fonts/Inter-Thin.ttf
+          weight: 100
+        - asset: assets/fonts/Inter-ExtraLight.ttf
+          weight: 200
+        - asset: assets/fonts/Inter-Light.ttf
           weight: 300
-        - asset: assets/fonts/OpenSans-LightItalic.ttf
-          weight: 300
-          style: italic
-        - asset: assets/fonts/OpenSans-Regular.ttf
+        - asset: assets/fonts/Inter-Regular.ttf
           weight: 400
-        - asset: assets/fonts/OpenSans-Italic.ttf
-          weight: 400
-          style: italic
-        - asset: assets/fonts/OpenSans-Medium.ttf
+        - asset: assets/fonts/Inter-Medium.ttf
           weight: 500
-        - asset: assets/fonts/OpenSans-MediumItalic.ttf
-          weight: 500
-          style: italic
-        - asset: assets/fonts/OpenSans-SemiBold.ttf
+        - asset: assets/fonts/Inter-SemiBold.ttf
           weight: 600
-        - asset: assets/fonts/OpenSans-SemiBoldItalic.ttf
-          weight: 600
-          style: italic
-        - asset: assets/fonts/OpenSans-Bold.ttf
+        - asset: assets/fonts/Inter-Bold.ttf
           weight: 700
-        - asset: assets/fonts/OpenSans-BoldItalic.ttf
-          weight: 700
-          style: italic
-        - asset: assets/fonts/OpenSans-ExtraBold.ttf
+        - asset: assets/fonts/Inter-ExtraBold.ttf
           weight: 800
-        - asset: assets/fonts/OpenSans-ExtraBoldItalic.ttf
-          weight: 800
-          style: italic
+        - asset: assets/fonts/Inter-Black.ttf
+          weight: 900
