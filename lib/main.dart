@@ -5,39 +5,28 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
-import 'package:flutter_foreground_task/models/notification_permission.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:starcy/core/routes/app_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:starcy/core/services/background_task_handler.dart';
 
 import 'firebase_options.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize background task
-  // await BackgroundTaskService.initializeBackgroundTask();
-
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  // Load environment variables
-  // if(kIsWeb){
-  //   await dotenv.load(fileName: "env");
-  // }else {
-  //   await dotenv.load(fileName: ".env");
-  // }
 
   await Supabase.initialize(
-    url: 'https://hdqtnuphhgpyerlwbtbo.supabase.co',
+    url: "https://txuvmmvubieskhcwwmrh.supabase.co",
     anonKey:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhkcXRudXBoaGdweWVybHdidGJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE0OTczOTAsImV4cCI6MjA1NzA3MzM5MH0.vmTWkiSzdmWXaN4f4MOdqUNrCZuuzJTbzYBU7_w3Y3A',
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR4dXZtbXZ1Ymllc2toY3d3bXJoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM5NDQ1MjMsImV4cCI6MjA0OTUyMDUyM30.0ajES5QDCgFo33n8EHqqFQN1LZ6Z2HOOjrltgWhNNXQ",
   );
 
-  FlutterForegroundTask.initCommunicationPort();
-  _startAutoRecording();
+  if (!kIsWeb) {
+    FlutterForegroundTask.initCommunicationPort();
+  }
 
   runApp(
     DevicePreview(
@@ -45,17 +34,6 @@ Future<void> main() async {
       builder: (context) => MyApp(),
     ),
   );
-}
-
-Future<void> _startAutoRecording() async {
-  final NotificationPermission notificationPermission =
-      await FlutterForegroundTask.checkNotificationPermission();
-  if (notificationPermission != NotificationPermission.granted) {
-    await FlutterForegroundTask.requestNotificationPermission();
-  }
-  await Permission.microphone.request();
-  BackgroundRecordService backgroundRecordService = BackgroundRecordService();
-  backgroundRecordService.startRecord();
 }
 
 class MyApp extends StatelessWidget {
