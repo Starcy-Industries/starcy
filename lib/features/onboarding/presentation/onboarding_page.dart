@@ -6,11 +6,8 @@ import 'package:starcy/features/onboarding/presentation/models/form_steps.dart';
 import 'package:starcy/features/onboarding/presentation/models/onboarding_model.dart';
 import 'package:starcy/features/onboarding/presentation/widgets/form_fields.dart';
 import 'package:starcy/features/onboarding/presentation/widgets/step_navigation.dart';
-import 'package:starcy/utils/permission_manager.dart';
 import 'package:starcy/utils/sp.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
-import '../../../utils/permission_dialog.dart';
 
 @RoutePage()
 class OnboardingPage extends StatefulWidget {
@@ -292,11 +289,6 @@ class _OnboardingPageState extends State<OnboardingPage> {
         if (widget.isEdit == true) {
           widget.onBack!();
         } else {
-          bool isAllowed =
-              await PermissionDialog.showPermissionRationaleDialog(context);
-          if (isAllowed) {
-            PermissionManager.requestPermissions(context);
-          }
           context.router.replace(const UserTermsRoute());
         }
       }
@@ -800,8 +792,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                         children: [
                           if (isDesktop) SizedBox(height: 65.appSp),
                           Padding(
-                            padding:
-                                EdgeInsets.symmetric(horizontal: 24.appSp),
+                            padding: EdgeInsets.symmetric(horizontal: 24.appSp),
                             child: Column(
                               crossAxisAlignment: (isDesktop)
                                   ? CrossAxisAlignment.center

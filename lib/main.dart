@@ -6,17 +6,25 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:starcy/core/routes/app_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:starcy/core/services/background_task_handler.dart';
 
 import 'firebase_options.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize background task
+  await BackgroundTaskService.initializeBackgroundTask();
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
   // Load environment variables
-  await dotenv.load(fileName: ".env");
-
+  if(kIsWeb){
+    await dotenv.load(fileName: "env");
+  }else {
+    await dotenv.load(fileName: ".env");
+  }
   await Supabase.initialize(
     url: dotenv.env['SUPABASE_URL'] ?? '',
     anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',

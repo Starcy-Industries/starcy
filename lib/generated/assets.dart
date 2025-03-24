@@ -2,6 +2,7 @@
 class Assets {
   Assets._();
 
+  static const String assetsEnv = 'assets/env';
   static const String assetsImagesAppleLogo = 'assets/images/apple_logo.png';
   static const String assetsImagesGoogleLogo = 'assets/images/google_logo.png';
   static const String fontsInterBlack = 'assets/fonts/Inter-Black.ttf';
