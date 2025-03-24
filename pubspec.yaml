@@ -26,11 +26,14 @@ dependencies:
   # Device info
   device_info_plus: ^9.1.2
   firebase_core: ^3.12.1
-  flutter_background_service: ^5.0.5
-  flutter_background_service_android: ^6.3.0
-  flutter_background_service_ios: ^5.0.3
-  flutter_background_service_platform_interface: ^5.1.2
+  # flutter_background_service: ^5.0.5
+  # flutter_background_service_android: ^6.3.0
+  # flutter_background_service_ios: ^5.0.3
+  # flutter_background_service_platform_interface: ^5.1.2
   permission_handler: ^11.3.0
+  flutter_foreground_task: 8.5.0
+  flutter_sound: ^9.11.3
+  audio_session: ^0.1.19
 
 dev_dependencies:
   flutter_test:
@@ -46,7 +49,7 @@ flutter:
     - assets/images/
     - assets/images/google_logo.png
     - assets/images/apple_logo.png
-    - .env
+    # - .env
 
   fonts:
     - family: Inter

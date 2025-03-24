@@ -68,7 +68,7 @@ class _AuthDialogState extends State<AuthDialog> {
                 .single();
             if (context.mounted && mounted) {
               // Start background task after successful login
-              await BackgroundTaskService.startBackgroundTask();
+              // await BackgroundTaskService.startBackgroundTask();
 
               if (res['agreedTermsAndConditions'] == true) {
                 Navigator.of(context).pop();
