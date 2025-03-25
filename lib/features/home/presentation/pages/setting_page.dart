@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../onboarding/presentation/onboarding_page.dart';
 import 'data_controls_page.dart';
+import 'profile_section.dart';
 
 class SettingPage extends StatefulWidget {
   const SettingPage({super.key});
@@ -260,7 +261,7 @@ class _SettingsCardContent extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.max,
                     children: [
-                      _ProfileSection(),
+                      ProfileSection(),
                       _AccountSection(
                           onEdit: onEdit, onDataControlsTap: onDataControlsTap),
                       _AboutSection(onLaunchURL: onLaunchURL),
@@ -282,88 +283,6 @@ class _SettingsCardContent extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _ProfileSection extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final user = Supabase.instance.client.auth.currentSession?.user;
-
-    return Column(
-      children: [
-        Center(
-          child: Padding(
-            padding: EdgeInsets.only(top: 16.appSp, bottom: 8.appSp),
-            child: _ProfileAvatar(user: user),
-          ),
-        ),
-        _ProfileName(userId: user?.id),
-      ],
-    );
-  }
-}
-
-class _ProfileAvatar extends StatelessWidget {
-  const _ProfileAvatar({required this.user});
-
-  final User? user;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 64.appSp,
-      height: 64.appSp,
-      decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 44, 44, 46),
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: Colors.grey.shade800.withValues(alpha: 0.3),
-          width: 1,
-        ),
-      ),
-      child: Center(
-        child: Text(
-          user?.email?.split('')[0].toUpperCase() ?? '',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 16.appSp,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ProfileName extends StatelessWidget {
-  const _ProfileName({required this.userId});
-
-  final String? userId;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: FutureBuilder(
-        future: Supabase.instance.client
-            .from('profiles')
-            .select('data')
-            .eq('id', userId ?? '')
-            .single(),
-        builder: (context, response) {
-          final name = response.data?['data']?['name'];
-          return Text(
-            name ?? '',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 15.appSp,
-              fontWeight: FontWeight.w600,
-            ),
-            textAlign: TextAlign.center,
-          );
-        },
-      ),
     );
   }
 }

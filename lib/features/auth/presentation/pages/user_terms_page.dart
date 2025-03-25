@@ -1,7 +1,12 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:starcy/core/routes/app_router.dart';
 import 'package:starcy/utils/sp.dart';
+
+import '../../../../core/services/background_task_handler.dart';
 
 @RoutePage()
 class UserTermsPage extends StatelessWidget {
@@ -96,8 +101,10 @@ class UserTermsPage extends StatelessWidget {
                       width: double.infinity,
                       height: 48.appSp,
                       child: ElevatedButton(
-                        onPressed: () =>
-                            context.router.replace(const HomeRoute()),
+                        onPressed: () async {
+
+                          context.router.replace(const HomeRoute());
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.black,
                           elevation: 0,
@@ -170,4 +177,6 @@ class UserTermsPage extends StatelessWidget {
       ],
     );
   }
+
+
 }

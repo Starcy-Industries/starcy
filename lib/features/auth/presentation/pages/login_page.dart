@@ -1,15 +1,14 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:starcy/core/routes/app_router.dart';
 import 'package:starcy/features/auth/presentation/widgets/auth_dialog.dart';
 import 'package:starcy/utils/sp.dart';
-import 'dart:async';
-
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 
 @RoutePage()
 class LoginPage extends StatefulWidget {
@@ -134,6 +133,7 @@ class _LoginPageState extends State<LoginPage>
   }
 
   final supabase = Supabase.instance.client;
+
   Future<void> _nativeGoogleSignIn() async {
     try {
       setState(() {
@@ -142,11 +142,11 @@ class _LoginPageState extends State<LoginPage>
 
       /// Web Client ID that you registered with Google Cloud.
       const webClientId =
-          '1063915694908-isdokkr3bhct06v3vv5guqm0cpfa5jao.apps.googleusercontent.com';
+          '760107320718-3knhun4re3ngp3342cs5lendg8arkf97.apps.googleusercontent.com';
 
       /// iOS Client ID that you registered with Google Cloud.
       const iosClientId =
-          '1063915694908-dslu9c4locf41aqjrv2nqb5vhj8t057h.apps.googleusercontent.com';
+          '760107320718-ttg790i2206nna14umb759j5e95vrag1.apps.googleusercontent.com';
 
       // Google sign in on Android will work without providing the Android
       // Client ID registered on Google Cloud.
@@ -325,8 +325,13 @@ class _LoginPageState extends State<LoginPage>
                               await _nativeGoogleSignIn();
                               return;
                             } else {
-                              await supabase.auth
-                                  .signInWithOAuth(OAuthProvider.google);
+                              await supabase.auth.signInWithOAuth(
+                                  OAuthProvider.google,
+                                  redirectTo: "https://starcy-171f1.web.app/",
+                                  authScreenLaunchMode:
+                                      LaunchMode.externalApplication).then((value) {
+                                        print(value);
+                                      },);
 
                               return;
                             }

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:starcy/core/routes/app_router.dart';
 import 'package:starcy/utils/sp.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:toastification/toastification.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 @RoutePage()
@@ -163,7 +164,16 @@ class _AppTermsPageState extends State<AppTermsPage> {
                                     final supabase = Supabase.instance.client;
                                     final user =
                                         supabase.auth.currentSession?.user;
+                                    print(user?.toJson());
                                     if (user == null) {
+                                      toastification.show(
+                                        context: context,
+                                        title: const Text(
+                                            'User not authenticated. Please verify your email first and login again',),
+                                        autoCloseDuration:
+                                            const Duration(seconds: 5),
+                                      );
+                                      context.router.replace(const LoginRoute());
                                       throw Exception('User not authenticated');
                                     }
 

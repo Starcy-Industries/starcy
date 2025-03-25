@@ -8,6 +8,7 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:starcy/core/routes/app_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:toastification/toastification.dart';
 
 import 'firebase_options.dart';
 
@@ -47,24 +48,26 @@ class MyApp extends StatelessWidget {
       designSize: ScreenUtil.defaultSize,
       minTextAdapt: true,
       splitScreenMode: true,
-      builder: (context, child) => MaterialApp.router(
-        title: 'Starcy',
-        theme: ThemeData(
-          fontFamily: 'Inter',
-          useMaterial3: true,
-          colorScheme: const ColorScheme(
-            brightness: Brightness.light,
-            primary: Colors.black,
-            onPrimary: Colors.white,
-            secondary: Colors.white,
-            onSecondary: Colors.black,
-            error: Colors.red,
-            onError: Colors.white,
-            surface: Colors.white,
-            onSurface: Colors.black,
+      builder: (context, child) => ToastificationWrapper(
+        child: MaterialApp.router(
+          title: 'Starcy',
+          theme: ThemeData(
+            fontFamily: 'Inter',
+            useMaterial3: true,
+            colorScheme: const ColorScheme(
+              brightness: Brightness.light,
+              primary: Colors.black,
+              onPrimary: Colors.white,
+              secondary: Colors.white,
+              onSecondary: Colors.black,
+              error: Colors.red,
+              onError: Colors.white,
+              surface: Colors.white,
+              onSurface: Colors.black,
+            ),
           ),
+          routerConfig: _appRouter.config(),
         ),
-        routerConfig: _appRouter.config(),
       ),
     );
   }

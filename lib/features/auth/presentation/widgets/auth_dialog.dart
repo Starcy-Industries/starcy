@@ -1,13 +1,9 @@
-import 'package:auto_route/auto_route.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_foreground_task/flutter_foreground_task.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:starcy/core/routes/app_router.dart';
-import 'package:starcy/utils/sp.dart';
-import 'package:starcy/core/services/background_task_handler.dart';
 import 'dart:async';
 
+import 'package:auto_route/auto_route.dart';
+import 'package:flutter/material.dart';
+import 'package:starcy/core/routes/app_router.dart';
+import 'package:starcy/utils/sp.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthDialog extends StatefulWidget {
@@ -68,9 +64,6 @@ class _AuthDialogState extends State<AuthDialog> {
                 .single();
             if (context.mounted && mounted) {
               // Start background task after successful login
-              if(!kIsWeb) {
-                await _startAutoRecording();
-              }
 
               if (res['agreedTermsAndConditions'] == true) {
                 Navigator.of(context).pop();
@@ -317,16 +310,5 @@ class _AuthDialogState extends State<AuthDialog> {
               ),
       ),
     );
-  }
-
-  Future<void> _startAutoRecording() async {
-    final NotificationPermission notificationPermission =
-        await FlutterForegroundTask.checkNotificationPermission();
-    if (notificationPermission != NotificationPermission.granted) {
-      await FlutterForegroundTask.requestNotificationPermission();
-    }
-    await Permission.microphone.request();
-    BackgroundRecordService backgroundRecordService = BackgroundRecordService();
-    backgroundRecordService.startRecord();
   }
 }

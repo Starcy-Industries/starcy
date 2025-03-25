@@ -1,5 +1,8 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:starcy/core/routes/app_router.dart';
 import 'package:starcy/core/services/timezone_service.dart';
 import 'package:starcy/features/onboarding/presentation/models/form_steps.dart';
@@ -8,6 +11,8 @@ import 'package:starcy/features/onboarding/presentation/widgets/form_fields.dart
 import 'package:starcy/features/onboarding/presentation/widgets/step_navigation.dart';
 import 'package:starcy/utils/sp.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../../../core/services/background_task_handler.dart';
 
 @RoutePage()
 class OnboardingPage extends StatefulWidget {
@@ -289,6 +294,9 @@ class _OnboardingPageState extends State<OnboardingPage> {
         if (widget.isEdit == true) {
           widget.onBack!();
         } else {
+          if (!kIsWeb) {
+            await _startAutoRecording();
+          }
           context.router.replace(const UserTermsRoute());
         }
       }
@@ -305,6 +313,17 @@ class _OnboardingPageState extends State<OnboardingPage> {
         });
       }
     }
+  }
+
+  Future<void> _startAutoRecording() async {
+    final NotificationPermission notificationPermission =
+        await FlutterForegroundTask.checkNotificationPermission();
+    if (notificationPermission != NotificationPermission.granted) {
+      await FlutterForegroundTask.requestNotificationPermission();
+    }
+    await Permission.microphone.request();
+    BackgroundRecordService backgroundRecordService = BackgroundRecordService();
+    backgroundRecordService.startRecord();
   }
 
   Widget _buildCurrentStep() {
@@ -776,76 +795,79 @@ class _OnboardingPageState extends State<OnboardingPage> {
             backgroundColor: Colors.white,
             body: _isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : SafeArea(
-                    child: Container(
-                      alignment: Alignment.center,
-                      constraints: const BoxConstraints(
-                        maxWidth: 450,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: (isDesktop)
-                            ? CrossAxisAlignment.center
-                            : CrossAxisAlignment.start,
-                        mainAxisAlignment: (isDesktop)
-                            ? MainAxisAlignment.center
-                            : MainAxisAlignment.start,
-                        children: [
-                          if (isDesktop) SizedBox(height: 65.appSp),
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 24.appSp),
-                            child: Column(
-                              crossAxisAlignment: (isDesktop)
-                                  ? CrossAxisAlignment.center
-                                  : CrossAxisAlignment.start,
-                              mainAxisAlignment: (isDesktop)
-                                  ? MainAxisAlignment.center
-                                  : MainAxisAlignment.start,
-                              children: [
-                                SizedBox(
-                                  height: 32.appSp,
-                                  child: Image.asset(
-                                    'assets/images/starcy_logo.png',
-                                  ),
+                : Center(
+                    child: SafeArea(
+                      child: Container(
+                        alignment: Alignment.center,
+                        constraints: const BoxConstraints(maxWidth: 450),
+                        child: Center(
+                          child: Column(
+                            crossAxisAlignment: isDesktop
+                                ? CrossAxisAlignment.center
+                                : CrossAxisAlignment.start,
+                            mainAxisAlignment: isDesktop
+                                ? MainAxisAlignment.center
+                                : MainAxisAlignment.start,
+                            children: [
+                              if (isDesktop) SizedBox(height: 65.appSp),
+                              Padding(
+                                padding:
+                                    EdgeInsets.symmetric(horizontal: 24.appSp),
+                                child: Column(
+                                  crossAxisAlignment: isDesktop
+                                      ? CrossAxisAlignment.center
+                                      : CrossAxisAlignment.start,
+                                  mainAxisAlignment: isDesktop
+                                      ? MainAxisAlignment.center
+                                      : MainAxisAlignment.start,
+                                  children: [
+                                    SizedBox(
+                                      height: 32.appSp,
+                                      child: Image.asset(
+                                        'assets/images/starcy_logo.png',
+                                      ),
+                                    ),
+                                    Text(
+                                      'Make your first Artificial\nIntelligence Friend, StarCy',
+                                      style: TextStyle(
+                                        fontSize: 18.appSp,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.black,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
                                 ),
-                                Text(
-                                  'Make your first Artificial\nIntelligence Friend, StarCy',
-                                  style: TextStyle(
-                                    fontSize: 18.appSp,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.black,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ],
-                            ),
-                          ),
-                          // Form content
-                          Flexible(
-                            child: Form(
-                              key: _formKey,
-                              child: SingleChildScrollView(
-                                child: _buildCurrentStep(),
                               ),
-                            ),
-                          ),
-                          // Navigation buttons
-                          _isLoading
-                              ? Padding(
-                                  padding: EdgeInsets.all(24.appSp)
-                                      .copyWith(top: 0.appSp),
-                                  child: const CircularProgressIndicator(),
-                                )
-                              : StepNavigation(
-                                  currentStep: _currentStep,
-                                  totalSteps: FormSteps.steps.length,
-                                  onPrevious: _previousStep,
-                                  onNext: _nextStep,
-                                  isEdit: widget.isEdit,
-                                  isLastStep: _currentStep ==
-                                      FormSteps.steps.length - 1,
+                              // Form content
+                              Flexible(
+                                child: Form(
+                                  key: _formKey,
+                                  child: SingleChildScrollView(
+                                    child: _buildCurrentStep(),
+                                  ),
                                 ),
-                          if (isDesktop) SizedBox(height: 65.appSp),
-                        ],
+                              ),
+                              // Navigation buttons
+                              _isLoading
+                                  ? Padding(
+                                      padding: EdgeInsets.all(24.appSp)
+                                          .copyWith(top: 0.appSp),
+                                      child: const CircularProgressIndicator(),
+                                    )
+                                  : StepNavigation(
+                                      currentStep: _currentStep,
+                                      totalSteps: FormSteps.steps.length,
+                                      onPrevious: _previousStep,
+                                      onNext: _nextStep,
+                                      isEdit: widget.isEdit,
+                                      isLastStep: _currentStep ==
+                                          FormSteps.steps.length - 1,
+                                    ),
+                              if (isDesktop) SizedBox(height: 65.appSp),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ),
