@@ -18,7 +18,7 @@ class SupabaseStorageHelper {
       debugPrint('Folder: $folder');
       debugPrint('File size: ${(bytes.length / 1024).toStringAsFixed(2)} KB');
 
-      final String filePath = '$folder/$fileName';
+      final String filePath = 'avatars/$fileName';
       debugPrint('Full file path: $filePath');
 
       // Upload the file

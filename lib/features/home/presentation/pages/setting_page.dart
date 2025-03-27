@@ -110,7 +110,7 @@ class _SettingsContent extends StatelessWidget {
         _BackgroundGradient(isDesktop: isDesktop),
         Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 400),
+            constraints: const BoxConstraints(maxWidth: 520),
             child: _SettingsCard(
               isDesktop: isDesktop,
               onEdit: onEdit,
@@ -221,7 +221,7 @@ class _SettingsCardContent extends StatelessWidget {
     return Column(
       children: [
         SizedBox(
-          height: isDesktop ? 300.appSp : 60.appSp,
+          height: isDesktop ? 150.appSp : 60.appSp,
           child: Image.asset(
             "assets/images/starcyindustries.png",
             color: isDesktop ? Colors.black : Colors.white,
@@ -261,7 +261,8 @@ class _SettingsCardContent extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.max,
                     children: [
-                      ProfileSection(),
+                      const SizedBox(height: 50),
+                      const ProfileSection(),
                       _AccountSection(
                           onEdit: onEdit, onDataControlsTap: onDataControlsTap),
                       _AboutSection(onLaunchURL: onLaunchURL),
@@ -343,10 +344,12 @@ class _AboutSection extends StatelessWidget {
     return _SettingsSection(
       title: 'ABOUT',
       children: [
-        const SettingItem(
+        SettingItem(
           icon: Icons.help_outline,
           title: 'Help Center',
           showArrow: false,
+          onTap: () =>
+              onLaunchURL('https://starcyindustries.com/connect-with-us'),
         ),
         SettingItem(
           icon: Icons.book,

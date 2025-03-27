@@ -802,24 +802,16 @@ class _OnboardingPageState extends State<OnboardingPage> {
                         constraints: const BoxConstraints(maxWidth: 450),
                         child: Center(
                           child: Column(
-                            crossAxisAlignment: isDesktop
-                                ? CrossAxisAlignment.center
-                                : CrossAxisAlignment.start,
-                            mainAxisAlignment: isDesktop
-                                ? MainAxisAlignment.center
-                                : MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               if (isDesktop) SizedBox(height: 65.appSp),
                               Padding(
                                 padding:
                                     EdgeInsets.symmetric(horizontal: 24.appSp),
                                 child: Column(
-                                  crossAxisAlignment: isDesktop
-                                      ? CrossAxisAlignment.center
-                                      : CrossAxisAlignment.start,
-                                  mainAxisAlignment: isDesktop
-                                      ? MainAxisAlignment.center
-                                      : MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     SizedBox(
                                       height: 32.appSp,

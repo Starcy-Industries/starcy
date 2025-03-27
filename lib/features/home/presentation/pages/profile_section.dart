@@ -19,6 +19,7 @@ class _ProfileSectionState extends State<ProfileSection> {
   Widget build(BuildContext context) {
     final user = Supabase.instance.client.auth.currentSession?.user;
     return Column(
+      spacing: 8,
       children: [
         Center(
           child: SizedBox(
@@ -142,7 +143,7 @@ class ProfileAvatar extends StatelessWidget {
           shape: BoxShape.circle,
           border: Border.all(
             color: Colors.grey.shade300,
-            width: 2,
+            width: 1,
           ),
         ),
         child: ClipOval(

@@ -1,6 +1,11 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:starcy/core/routes/app_router.dart';
 import 'package:starcy/utils/sp.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:toastification/toastification.dart';
 
 class DataControlsPage extends StatefulWidget {
   const DataControlsPage({
@@ -165,7 +170,100 @@ class _DataControlsPageState extends State<DataControlsPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         GestureDetector(
-          onTap: () {},
+          onTap: () async {
+            final bool? confirm = await showDialog<bool>(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  backgroundColor: Colors.black,
+                  title: Text(
+                    'Delete Account',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18.appSp,
+                    ),
+                  ),
+                  content: Text(
+                    'Are you sure you want to delete your account? This action cannot be undone.',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14.appSp,
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14.appSp,
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(true),
+                      child: Text(
+                        'Delete',
+                        style: TextStyle(
+                          color: const Color(0xFFFF3B30),
+                          fontSize: 14.appSp,
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            );
+
+            if (confirm == true) {
+              try {
+                final supabase = Supabase.instance.client;
+                final user = supabase.auth.currentSession?.user;
+
+                if (user == null) {
+                  throw Exception('User not authenticated');
+                }
+
+                // Delete user's profile data
+
+                if (await deleteUserAccount()) {
+                  await supabase.from('profiles').delete().eq('id', user.id);
+                  await supabase.auth.signOut();
+
+                  if (mounted) {
+                    context.router.replace(const LoginRoute());
+                  }
+                }
+              } catch (e) {
+                if (mounted) {
+                  String errorMessage = 'Error deleting account: ';
+                  if (e.toString().contains('Permission denied') ||
+                      e.toString().contains('not_admin')) {
+                    errorMessage +=
+                        'Unable to delete account. Please contact support.';
+                  } else if (e.toString().contains('User not found')) {
+                    errorMessage += 'User account not found.';
+                  } else {
+                    errorMessage += e.toString();
+                  }
+                  print(e.toString());
+                  toastification.show(
+                    context: context,
+                    title: Text(
+                      errorMessage,
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 14.appSp,
+                      ),
+                    ),
+                    type: ToastificationType.error,
+                    autoCloseDuration: const Duration(seconds: 4),
+                  );
+                }
+              }
+            }
+          },
           child: Container(
             width: double.infinity,
             padding: const EdgeInsets.all(8),
@@ -185,5 +283,40 @@ class _DataControlsPageState extends State<DataControlsPage> {
         ),
       ],
     );
+  }
+
+  Future<bool> deleteUserAccount() async {
+    final supabase = Supabase.instance.client;
+    final user = supabase.auth.currentUser;
+
+    if (user == null) {
+      print("No user is logged in.");
+      return false;
+    }
+
+    const url =
+        "https://txuvmmvubieskhcwwmrh.supabase.co/functions/v1/delete_user_account";
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          "Authorization":
+              "Bearer ${supabase.auth.currentSession?.accessToken}",
+          "Content-Type": "application/json",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        print("User deleted successfully");
+        return true;
+      } else {
+        print("Failed to delete user: ${response.body}");
+        return false;
+      }
+    } catch (e) {
+      print("Error deleting user: $e");
+      return false;
+    }
   }
 }
