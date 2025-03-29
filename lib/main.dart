@@ -29,11 +29,15 @@ Future<void> main() async {
     FlutterForegroundTask.initCommunicationPort();
   }
 
-  runApp(
+  /*runApp(
     DevicePreview(
       enabled: kIsWeb,
       builder: (context) => MyApp(),
     ),
+  )*/
+
+  runApp(
+    MyApp(),
   );
 }
 

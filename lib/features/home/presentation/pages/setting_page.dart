@@ -221,7 +221,7 @@ class _SettingsCardContent extends StatelessWidget {
     return Column(
       children: [
         SizedBox(
-          height: isDesktop ? 150.appSp : 60.appSp,
+          height: isDesktop ? 65.appSp : 60.appSp,
           child: Image.asset(
             "assets/images/starcyindustries.png",
             color: isDesktop ? Colors.black : Colors.white,
