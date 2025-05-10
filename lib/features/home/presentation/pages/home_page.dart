@@ -1,22 +1,31 @@
+import 'dart:io';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:cupertino_modal_sheet/cupertino_modal_sheet.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:record/record.dart';
 import 'package:starcy/features/home/presentation/pages/setting_page.dart';
 import 'package:starcy/utils/sp.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:path/path.dart' as p;
 
 @RoutePage()
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  @override
   Widget build(BuildContext context) {
-    return const SettingPage();
     return CupertinoPageScaffold(
       child: Scaffold(
         backgroundColor: const Color.fromARGB(255, 15, 15, 15),
-        drawer: _buildDrawer(context),
+        drawer: _Drawer(),
         body: SafeArea(
           child: Container(
             alignment: Alignment.center,
@@ -66,19 +75,15 @@ class HomePage extends StatelessWidget {
                             height: 36.appSp,
                             decoration: const BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Colors.deepOrange,
+                              color: Colors.white,
                             ),
                             child: Center(
                               child: Padding(
-                                padding: EdgeInsets.only(bottom: 2.0.appSp, right: 1.appSp),
-                                child: Text(
-                                  'G',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18.appSp,
-                                  ),
-                                ),
+                                padding: EdgeInsets.only(
+                                    bottom: 2.0.appSp, right: 1.appSp),
+                                child: const Image(
+                                    image: AssetImage(
+                                        'assets/images/starcy_logo.png')),
                               ),
                             ),
                           ),
@@ -88,7 +93,7 @@ class HomePage extends StatelessWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                'Grok 3',
+                                'StarCy',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 20.appSp,
@@ -199,7 +204,9 @@ class HomePage extends StatelessWidget {
                             IconButton(
                               icon: const Icon(Icons.add_rounded,
                                   color: Colors.grey),
-                              onPressed: () {},
+                              onPressed: () {
+                                // TODO: implement add option
+                              },
                               padding: EdgeInsets.zero,
                               constraints: const BoxConstraints(),
                             ),
@@ -208,13 +215,6 @@ class HomePage extends StatelessWidget {
                               children: [
                                 const Icon(Icons.search, color: Colors.grey),
                                 SizedBox(width: 4.appSp),
-                                Text(
-                                  'DeepSearch',
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 14.appSp,
-                                  ),
-                                ),
                               ],
                             ),
                             SizedBox(width: 16.appSp),
@@ -223,19 +223,34 @@ class HomePage extends StatelessWidget {
                                 const Icon(Icons.lightbulb_outline,
                                     color: Colors.grey),
                                 SizedBox(width: 4.appSp),
-                                Text(
-                                  'Think',
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 14.appSp,
-                                  ),
-                                ),
                               ],
                             ),
                             const Spacer(),
                             IconButton(
-                              icon: const Icon(Icons.mic, color: Colors.grey),
-                              onPressed: () {},
+                              icon: Icon(_isRecording ? Icons.stop : Icons.mic,
+                                  color: Colors.grey),
+                              onPressed: () async {
+                                if (_isRecording) {
+                                  final path = await _audioRecorder.stop();
+                                  debugPrint("Saved recording to $path");
+                                  setState(() {
+                                    _isRecording = false;
+                                  });
+                                } else if (await _audioRecorder
+                                    .hasPermission()) {
+                                  final docsDir =
+                                      await getApplicationDocumentsDirectory();
+                                  final path =
+                                      p.join(docsDir.path, "sample.m4a");
+                                  await _audioRecorder
+                                      .start(const RecordConfig(), path: path);
+                                  setState(() {
+                                    _isRecording = true;
+                                  });
+                                } else {
+                                  debugPrint("Unable to start recording");
+                                }
+                              },
                               padding: EdgeInsets.zero,
                               constraints: const BoxConstraints(),
                             ),
@@ -271,7 +286,60 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildDrawer(BuildContext context) {
+  @override
+  void dispose() {
+    _audioRecorder.dispose();
+    super.dispose();
+  }
+
+  final _audioRecorder = AudioRecorder();
+  var _isRecording = false;
+}
+
+class _DrawerItem extends StatelessWidget {
+  const _DrawerItem({
+    required this.icon,
+    required this.label,
+    bool this.isSelected = false,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Icon(
+        icon,
+        color: isSelected ? Colors.white : Colors.grey.shade400,
+        size: 24.appSp,
+      ),
+      title: Text(
+        label,
+        style: TextStyle(
+          color: isSelected ? Colors.white : Colors.grey.shade400,
+          fontSize: 16.appSp,
+          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+        ),
+      ),
+      onTap: onTap,
+      selected: isSelected,
+      selectedTileColor: Colors.grey.shade900.withOpacity(0.5),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8.appSp),
+      ),
+      contentPadding:
+          EdgeInsets.symmetric(horizontal: 16.appSp, vertical: 4.appSp),
+    );
+  }
+
+  final IconData icon;
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+}
+
+class _Drawer extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
     return Drawer(
       backgroundColor: Colors.black,
       child: SafeArea(
@@ -307,7 +375,7 @@ class HomePage extends StatelessWidget {
               ),
 
               // Navigation items
-              _buildDrawerItem(
+              _DrawerItem(
                 icon: Icons.build_circle_rounded,
                 label: 'Starcy',
                 isSelected: true,
@@ -317,7 +385,7 @@ class HomePage extends StatelessWidget {
               ),
               SizedBox(height: 16.appSp),
 
-              _buildDrawerItem(
+              _DrawerItem(
                 icon: Icons.grid_view_rounded,
                 label: 'Explore GPTs',
                 onTap: () {
@@ -390,6 +458,7 @@ class HomePage extends StatelessWidget {
                   ],
                 ),
               ),
+
               // User profile at the bottom
               Builder(builder: (context) {
                 final user = Supabase.instance.client.auth.currentSession?.user;
@@ -447,37 +516,6 @@ class HomePage extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildDrawerItem({
-    required IconData icon,
-    required String label,
-    bool isSelected = false,
-    required VoidCallback onTap,
-  }) {
-    return ListTile(
-      leading: Icon(
-        icon,
-        color: isSelected ? Colors.white : Colors.grey.shade400,
-        size: 24.appSp,
-      ),
-      title: Text(
-        label,
-        style: TextStyle(
-          color: isSelected ? Colors.white : Colors.grey.shade400,
-          fontSize: 16.appSp,
-          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-        ),
-      ),
-      onTap: onTap,
-      selected: isSelected,
-      selectedTileColor: Colors.grey.shade900.withOpacity(0.5),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8.appSp),
-      ),
-      contentPadding:
-          EdgeInsets.symmetric(horizontal: 16.appSp, vertical: 4.appSp),
     );
   }
 }
