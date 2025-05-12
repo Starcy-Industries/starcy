@@ -1,10 +1,13 @@
-import 'package:device_preview/device_preview.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:starcy/core/routes/app_router.dart';
+
+import 'package:device_preview/device_preview.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+import 'package:starcy/core/routes/app_router.dart';
+import 'package:starcy/utils/config.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,6 +15,10 @@ Future<void> main() async {
   // Load environment variables
   await dotenv.load(fileName: ".env");
 
+  // Load Configs
+  await ConfigManager.instance.loadConfig();
+
+  // Supabase init
   await Supabase.initialize(
     url: dotenv.env['SUPABASE_URL'] ?? '',
     anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',

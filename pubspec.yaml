@@ -19,14 +19,17 @@ dependencies:
   flutter_screenutil: 5.9.0
   font_awesome_flutter: 10.6.0
   google_sign_in: 6.3.0
+  http: ^1.4.0
   just_audio: ^0.10.2
   logger: 2.0.2+1
   record: ^6.0.0
   shared_preferences: ^2.2.2
   supabase_flutter: 2.8.4
   url_launcher: 6.3.1
-  path: ^1.9.1
-  path_provider: ^2.1.5
+  web_socket_channel: ^3.0.3
+
+  audio:
+    path: ./audio
 
 dev_dependencies:
   flutter_test:
