@@ -171,12 +171,15 @@ class Settings extends StatelessWidget {
                               icon: Icons.data_usage_outlined,
                               title: 'Data Controls',
                               showArrow: true,
+                              onTap: () {
+                                context.router.push(DataControlsRoute());
+                              },
                             ),
                           ],
                         ),
                       ),
 
-                      // SPEECH SECTION
+                      // ABOUT SECTION
                       Padding(
                         padding: EdgeInsets.only(
                             left: 16.appSp, top: 24.appSp, bottom: 4.appSp),
@@ -201,6 +204,11 @@ class Settings extends StatelessWidget {
                               icon: Icons.help_outline,
                               title: 'Help Center',
                               showArrow: false,
+                              onTap: () {
+                                launchUrl(
+                                  Uri.parse('https://starcyindustries.com'),
+                                );
+                              },
                             ),
                             _SettingItem(
                               icon: Icons.book,
@@ -255,7 +263,6 @@ class Settings extends StatelessWidget {
                           ],
                         ),
                       ),
-
                       SizedBox(height: 24.appSp),
                     ],
                   ),
@@ -263,7 +270,6 @@ class Settings extends StatelessWidget {
               ),
             ),
           ),
-// //
         ],
       ),
     );

@@ -27,6 +27,22 @@ class AppTermsRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [DataControlsPage]
+class DataControlsRoute extends PageRouteInfo<void> {
+  const DataControlsRoute({List<PageRouteInfo>? children})
+    : super(DataControlsRoute.name, initialChildren: children);
+
+  static const String name = 'DataControlsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DataControlsPage();
+    },
+  );
+}
+
+/// generated route for
 /// [HomePage]
 class HomeRoute extends PageRouteInfo<void> {
   const HomeRoute({List<PageRouteInfo>? children})

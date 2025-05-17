@@ -4,14 +4,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:cupertino_modal_sheet/cupertino_modal_sheet.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import 'package:audio/audio.dart';
 
-import 'package:starcy/features/home/presentation/pages/setting_page.dart';
-import 'package:starcy/utils/sp.dart';
 import 'package:starcy/components/chat.dart';
 import 'package:starcy/utils/evi_message.dart' as evi;
 import 'package:starcy/utils/config.dart';
@@ -26,6 +22,12 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final _audio = Audio();
+  WebSocketChannel? _chatChannel;
+  bool _isConnected = false;
+  bool _isMuted = false;
+  var chatEntries = <ChatEntry>[];
+
   @override
   Widget build(BuildContext context) {
     return const Settings();
@@ -33,8 +35,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void initState() {
-    _connect();
     super.initState();
+    _connect();
   }
 
   @override
@@ -98,7 +100,7 @@ class _HomePageState extends State<HomePage> {
           case (evi.ChatMetadataMessage chatMetadataMessage):
             debugPrint("Chat metadata: ${chatMetadataMessage.rawJson}");
             _prepareAudioSettings();
-            _startRecording();
+            await _startRecording();
             break;
           case (evi.AudioOutputMessage audioOutputMessage):
             _audio.enqueueAudio(audioOutputMessage.data);
@@ -179,15 +181,15 @@ class _HomePageState extends State<HomePage> {
     }));
   }
 
-  void _startRecording() async {
-    await _audio.startRecording();
-
+  Future<void> _startRecording() async {
     _audio.audioStream.listen((data) async {
       _sendAudio(data);
     });
     _audio.audioStream.handleError((error) {
       debugPrint("Error recording audio: $error");
     });
+
+    await _audio.startRecording();
   }
 
   void _stopRecording() {
@@ -199,236 +201,6 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _isMuted = false;
     });
-  }
-
-  final _audio = Audio();
-  WebSocketChannel? _chatChannel;
-  bool _isConnected = false;
-  bool _isMuted = false;
-  var chatEntries = <ChatEntry>[];
-}
-
-class _DrawerItem extends StatelessWidget {
-  const _DrawerItem({
-    required this.icon,
-    required this.label,
-    bool this.isSelected = false,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: Icon(
-        icon,
-        color: isSelected ? Colors.white : Colors.grey.shade400,
-        size: 24.appSp,
-      ),
-      title: Text(
-        label,
-        style: TextStyle(
-          color: isSelected ? Colors.white : Colors.grey.shade400,
-          fontSize: 16.appSp,
-          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-        ),
-      ),
-      onTap: onTap,
-      selected: isSelected,
-      selectedTileColor: Colors.grey.shade900.withOpacity(0.5),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8.appSp),
-      ),
-      contentPadding:
-          EdgeInsets.symmetric(horizontal: 16.appSp, vertical: 4.appSp),
-    );
-  }
-
-  final IconData icon;
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-}
-
-class _Drawer extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Drawer(
-      backgroundColor: Colors.black,
-      child: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 12.appSp),
-          child: Column(
-            children: [
-              // Search bar at the top
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 16.appSp),
-                child: Container(
-                  height: 44.appSp,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade900.withOpacity(0.7),
-                    borderRadius: BorderRadius.circular(10.appSp),
-                  ),
-                  padding: EdgeInsets.symmetric(horizontal: 12.appSp),
-                  child: Row(
-                    children: [
-                      Icon(Icons.search,
-                          color: Colors.grey.shade400, size: 20.appSp),
-                      SizedBox(width: 10.appSp),
-                      Text(
-                        'Search',
-                        style: TextStyle(
-                          color: Colors.grey.shade400,
-                          fontSize: 16.appSp,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Navigation items
-              _DrawerItem(
-                icon: Icons.build_circle_rounded,
-                label: 'Starcy',
-                isSelected: true,
-                onTap: () {
-                  Navigator.pop(context);
-                },
-              ),
-              SizedBox(height: 16.appSp),
-
-              _DrawerItem(
-                icon: Icons.grid_view_rounded,
-                label: 'Explore GPTs',
-                onTap: () {
-                  Navigator.pop(context);
-                },
-              ),
-              SizedBox(height: 40.appSp),
-
-              // No chats message
-              Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 80.appSp,
-                      height: 80.appSp,
-                      decoration: BoxDecoration(
-                        color: Colors.transparent,
-                        borderRadius: BorderRadius.circular(16.appSp),
-                      ),
-                      child: Icon(
-                        Icons.chat_bubble_outline,
-                        color: Colors.grey.shade600,
-                        size: 40.appSp,
-                      ),
-                    ),
-                    SizedBox(height: 12.appSp),
-                    Text(
-                      'No chats',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18.appSp,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    SizedBox(height: 8.appSp),
-                    Text(
-                      'As you talk with ChatGPT, your\nconversations will appear here.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.grey.shade400,
-                        fontSize: 14.appSp,
-                      ),
-                    ),
-                    SizedBox(height: 24.appSp),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 20.appSp,
-                          vertical: 16.appSp,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.appSp),
-                        ),
-                      ),
-                      child: Text(
-                        'Start new chat',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14.appSp,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // User profile at the bottom
-              Builder(builder: (context) {
-                final user = Supabase.instance.client.auth.currentSession?.user;
-                // if (user == null) {
-                //   return Container();
-                // }
-                return GestureDetector(
-                  behavior: HitTestBehavior.translucent,
-                  onTap: () {
-                    // open setting
-                    showCupertinoModalSheet(
-                      context: context,
-                      builder: (context) => const SettingPage(),
-                    );
-                  },
-                  child: Padding(
-                    padding: EdgeInsets.only(bottom: 16.appSp),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 32.appSp,
-                          height: 32.appSp,
-                          decoration: BoxDecoration(
-                            color: Colors.teal.shade300,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Center(
-                            child: Text(
-                              user?.email?.split('')[0] ?? 'U',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12.appSp,
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 12.appSp),
-                        Text(
-                          '${user?.email?.split('@')[0]}',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16.appSp,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const Spacer(),
-                        Icon(Icons.more_horiz, color: Colors.grey.shade600),
-                      ],
-                    ),
-                  ),
-                );
-              }),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }
 

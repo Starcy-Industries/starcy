@@ -18,11 +18,10 @@ void main() {
     expect(initialPlatform, isInstanceOf<MethodChannelAudio>());
   });
 
-  // test('getPlatformVersion', () async {
-  //   Audio audioPlugin = Audio();
-  //   MockAudioPlatform fakePlatform = MockAudioPlatform();
-  //   AudioPlatform.instance = fakePlatform;
-
-  //   expect(await audioPlugin.getPlatformVersion(), '42');
-  // });
+  test('getPlatformVersion', () async {
+    Audio audioPlugin = Audio();
+    MockAudioPlatform fakePlatform = MockAudioPlatform();
+    AudioPlatform.instance = fakePlatform;
+    // expect(await audioPlugin.getPlatformVersion(), '42');
+  });
 }

@@ -5,6 +5,7 @@ import 'package:starcy/features/auth/presentation/pages/login_page.dart';
 import 'package:starcy/features/auth/presentation/pages/user_terms_page.dart';
 import 'package:starcy/features/home/presentation/pages/home_page.dart';
 import 'package:starcy/features/home/presentation/pages/personalization_page.dart';
+import 'package:starcy/features/home/presentation/pages/data_controls_page.dart';
 import 'package:starcy/features/onboarding/presentation/onboarding_page.dart';
 import 'package:starcy/features/splash/presentation/pages/splash_page.dart';
 
@@ -43,5 +44,9 @@ class AppRouter extends RootStackRouter {
           page: PersonalizationRoute.page,
           path: '/personalization',
         ),
+        AutoRoute(
+          page: DataControlsRoute.page,
+          path: '/datacontrols',
+        )
       ];
 }

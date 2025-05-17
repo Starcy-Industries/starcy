@@ -87,7 +87,6 @@ class Audio {
     if (_dartAudio != null) {
       _dartAudio!.enqueueAudioSegment(base64String);
     } else {
-      print("Invoking enqueueAudio");
       return channel.invokeMethod('enqueueAudio', base64String);
     }
   }

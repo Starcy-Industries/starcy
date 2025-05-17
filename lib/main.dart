@@ -44,7 +44,7 @@ class MyApp extends StatelessWidget {
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, child) => MaterialApp.router(
-        title: 'Starcy',
+        title: 'StarCy',
         theme: ThemeData(
           fontFamily: 'OpenSans',
           useMaterial3: true,
