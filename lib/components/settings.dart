@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:starcy/components/setting_item.dart';
 import 'package:starcy/core/routes/app_router.dart';
 import 'package:starcy/utils/sp.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -13,6 +14,7 @@ class Settings extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = Supabase.instance.client.auth.currentSession?.user;
     final email = user?.email ?? 'N/A';
+    final isMicOn = true;
 
     if (1.sw > 550) return _DesktopUI();
 
@@ -70,13 +72,13 @@ class Settings extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Profile initial
                       Center(
                         child: Padding(
                           padding:
                               EdgeInsets.only(top: 46.appSp, bottom: 8.appSp),
                           child: Stack(
                             children: [
-                              // Profile image
                               Container(
                                 width: 64.appSp,
                                 height: 64.appSp,
@@ -106,6 +108,7 @@ class Settings extends StatelessWidget {
                         ),
                       ),
 
+                      // Profile email
                       Center(
                         child: FutureBuilder(
                             future: Supabase.instance.client
@@ -148,17 +151,17 @@ class Settings extends StatelessWidget {
                         ),
                         child: Column(
                           children: [
-                            _SettingItem(
+                            SettingItem(
                               icon: Icons.email_outlined,
                               title: 'Email',
                               value: email,
                             ),
-                            _SettingItem(
+                            SettingItem(
                               icon: Icons.add_circle_outline,
                               title: 'Subscription',
                               value: 'Free Plan',
                             ),
-                            _SettingItem(
+                            SettingItem(
                               icon: Icons.person_outline,
                               title: 'Personalization',
                               showArrow: true,
@@ -167,13 +170,41 @@ class Settings extends StatelessWidget {
                                     .push(OnboardingRoute(isEdit: true));
                               },
                             ),
-                            _SettingItem(
+                            SettingItem(
                               icon: Icons.data_usage_outlined,
                               title: 'Data Controls',
                               showArrow: true,
-                              onTap: () {
-                                context.router.push(DataControlsRoute());
-                              },
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // SETTINGS SECTION
+                      Padding(
+                        padding: EdgeInsets.only(
+                            left: 16.appSp, top: 32.appSp, bottom: 4.appSp),
+                        child: Text(
+                          'SETTINGS',
+                          style: TextStyle(
+                            color: Colors.grey.shade500,
+                            fontSize: 12.appSp,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        margin: EdgeInsets.symmetric(horizontal: 16.appSp),
+                        decoration: BoxDecoration(
+                          color: const Color(0xff1E1E1E),
+                          borderRadius: BorderRadius.circular(16.appSp),
+                        ),
+                        child: Column(
+                          children: [
+                            SettingItem(
+                              icon: Icons.mic,
+                              title: 'Mic',
+                              value: isMicOn ? "ON" : "OFF",
+                              showArrow: false,
                             ),
                           ],
                         ),
@@ -200,7 +231,7 @@ class Settings extends StatelessWidget {
                         ),
                         child: Column(
                           children: [
-                            _SettingItem(
+                            SettingItem(
                               icon: Icons.help_outline,
                               title: 'Help Center',
                               showArrow: false,
@@ -210,7 +241,7 @@ class Settings extends StatelessWidget {
                                 );
                               },
                             ),
-                            _SettingItem(
+                            SettingItem(
                               icon: Icons.book,
                               title: 'Terms of Use',
                               showArrow: false,
@@ -221,7 +252,7 @@ class Settings extends StatelessWidget {
                                 );
                               },
                             ),
-                            _SettingItem(
+                            SettingItem(
                               icon: Icons.lock_rounded,
                               title: 'Privacy Policy',
                               showArrow: false,
@@ -232,7 +263,7 @@ class Settings extends StatelessWidget {
                                 );
                               },
                             ),
-                            _SettingItem(
+                            SettingItem(
                               icon: Icons.fiber_manual_record,
                               title: 'Version',
                               value: '1.2025.012',
@@ -248,7 +279,7 @@ class Settings extends StatelessWidget {
                         margin: EdgeInsets.symmetric(horizontal: 16.appSp),
                         child: Column(
                           children: [
-                            _SettingItem(
+                            SettingItem(
                               icon: Icons.login_rounded,
                               title: 'Log out',
                               showArrow: false,
@@ -274,105 +305,6 @@ class Settings extends StatelessWidget {
       ),
     );
   }
-}
-
-class _SettingItem extends StatelessWidget {
-  _SettingItem({
-    required this.icon,
-    required this.title,
-    this.value,
-    this.showArrow = true,
-    this.isLast = false,
-    this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () {
-            onTap?.call();
-          },
-          child: Padding(
-            padding:
-                EdgeInsets.symmetric(horizontal: 0.appSp, vertical: 8.appSp),
-            child: Row(
-              children: [
-                // Leading icon
-                Container(
-                  padding: EdgeInsets.all(4.appSp),
-                  decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 44, 44, 46),
-                    borderRadius: BorderRadius.circular(8.appSp),
-                  ),
-                  child: Icon(
-                    icon,
-                    color: Colors.grey.shade400,
-                    size: 20.appSp,
-                    weight: 350,
-                  ),
-                ),
-                SizedBox(width: 16.appSp),
-
-                // Title
-                Text(
-                  title,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14.appSp,
-                  ),
-                ),
-                SizedBox(width: 16.appSp),
-                // Value and arrow
-                if (value != null || showArrow)
-                  Expanded(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        if (value != null)
-                          Expanded(
-                            child: Text(
-                              value!,
-                              style: TextStyle(
-                                color: Colors.grey.shade400,
-                                fontSize: 14.appSp,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.right,
-                            ),
-                          ),
-                        if (showArrow)
-                          Padding(
-                            padding: EdgeInsets.only(left: 4.appSp),
-                            child: Icon(
-                              Icons.chevron_right,
-                              color: Colors.grey.shade600,
-                              size: 22.appSp,
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  final IconData icon;
-  final String title;
-  final String? value;
-  final bool showArrow;
-  final bool isLast;
-  final Function()? onTap;
 }
 
 class _DesktopUI extends StatelessWidget {
@@ -519,17 +451,17 @@ class _DesktopUI extends StatelessWidget {
                           ),
                           child: Column(
                             children: [
-                              _SettingItem(
+                              SettingItem(
                                 icon: Icons.email_outlined,
                                 title: 'Email',
                                 value: email,
                               ),
-                              _SettingItem(
+                              SettingItem(
                                 icon: Icons.add_circle_outline,
                                 title: 'Subscription',
                                 value: 'Free Plan',
                               ),
-                              _SettingItem(
+                              SettingItem(
                                 icon: Icons.person_outline,
                                 title: 'Personalization',
                                 showArrow: true,
@@ -538,7 +470,7 @@ class _DesktopUI extends StatelessWidget {
                                       .push(OnboardingRoute(isEdit: true));
                                 },
                               ),
-                              _SettingItem(
+                              SettingItem(
                                 icon: Icons.data_usage_outlined,
                                 title: 'Data Controls',
                                 showArrow: true,
@@ -567,12 +499,12 @@ class _DesktopUI extends StatelessWidget {
                           ),
                           child: Column(
                             children: [
-                              _SettingItem(
+                              SettingItem(
                                 icon: Icons.help_outline,
                                 title: 'Help Center',
                                 showArrow: false,
                               ),
-                              _SettingItem(
+                              SettingItem(
                                 icon: Icons.book,
                                 title: 'Terms of Use',
                                 showArrow: false,
@@ -583,7 +515,7 @@ class _DesktopUI extends StatelessWidget {
                                   );
                                 },
                               ),
-                              _SettingItem(
+                              SettingItem(
                                 icon: Icons.lock_rounded,
                                 title: 'Privacy Policy',
                                 showArrow: false,
@@ -594,7 +526,7 @@ class _DesktopUI extends StatelessWidget {
                                   );
                                 },
                               ),
-                              _SettingItem(
+                              SettingItem(
                                 icon: Icons.fiber_manual_record,
                                 title: 'Version',
                                 value: '1.2025.012',
@@ -610,7 +542,7 @@ class _DesktopUI extends StatelessWidget {
                           margin: EdgeInsets.symmetric(horizontal: 16.appSp),
                           child: Column(
                             children: [
-                              _SettingItem(
+                              SettingItem(
                                 icon: Icons.login_rounded,
                                 title: 'Log out',
                                 showArrow: false,
