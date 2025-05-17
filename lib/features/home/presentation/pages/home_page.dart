@@ -1,17 +1,16 @@
 import 'dart:convert';
 
+import 'package:audio/audio.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
-import 'package:auto_route/auto_route.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
-
-import 'package:audio/audio.dart';
-
 import 'package:starcy/components/chat.dart';
-import 'package:starcy/utils/evi_message.dart' as evi;
-import 'package:starcy/utils/config.dart';
 import 'package:starcy/components/settings.dart';
+import 'package:starcy/core/routes/app_router.dart';
+import 'package:starcy/utils/config.dart';
+import 'package:starcy/utils/evi_message.dart' as evi;
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 @RoutePage()
 class HomePage extends StatefulWidget {
@@ -30,7 +29,37 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return const Settings();
+    final user = Supabase.instance.client.auth.currentSession?.user;
+    final email = user?.email ?? 'N/A';
+    final initials = user?.email?.split('')[0].toUpperCase() ?? '';
+
+    return FutureBuilder(
+        future: Supabase.instance.client
+            .from('profiles')
+            .select('data')
+            .eq('id', user?.id ?? '')
+            .single(),
+        builder: (context, response) {
+          final name = response.data?['data']?['name'] ?? '';
+          return Settings(
+            initials: initials,
+            email: email,
+            name: name,
+            isMuted: _isMuted,
+            onEvent: (event) async {
+              switch (event) {
+                case SettingEvent.toggleMic:
+                  _toggleInput();
+
+                case SettingEvent.logout:
+                  await Supabase.instance.client.auth.signOut();
+                  if (context.mounted) {
+                    context.router.push(const LoginRoute());
+                  }
+              }
+            },
+          );
+        });
   }
 
   @override
@@ -161,6 +190,21 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void _unmuteInput() {
+    _startRecording();
+    setState(() {
+      _isMuted = false;
+    });
+  }
+
+  void _toggleInput() {
+    if (_isMuted) {
+      _unmuteInput();
+    } else {
+      _muteInput();
+    }
+  }
+
   void _prepareAudioSettings() {
     // set session settings to prepare EVI for receiving linear16 encoded audio
     // https://dev.hume.ai/docs/empathic-voice-interface-evi/configuration#session-settings
@@ -194,13 +238,6 @@ class _HomePageState extends State<HomePage> {
 
   void _stopRecording() {
     _audio.stopRecording();
-  }
-
-  void _unmuteInput() {
-    _startRecording();
-    setState(() {
-      _isMuted = false;
-    });
   }
 }
 
