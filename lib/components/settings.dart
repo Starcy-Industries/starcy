@@ -210,7 +210,7 @@ class Settings extends StatelessWidget {
                             SettingItem(
                               icon: Icons.mic,
                               title: 'Mic',
-                              value: isMuted ? "OFF" : "ON",
+                              value: isMuted ? "Off" : "On",
                               showArrow: false,
                               onTap: () => onEvent(SettingEvent.toggleMic),
                             ),
@@ -274,7 +274,7 @@ class Settings extends StatelessWidget {
                             SettingItem(
                               icon: Icons.fiber_manual_record,
                               title: 'Version',
-                              value: '1.2025.012',
+                              value: '1.0.0',
                               showArrow: false,
                               isLast: true,
                             ),

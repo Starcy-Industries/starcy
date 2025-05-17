@@ -13,9 +13,8 @@ class DartAudio {
   final AudioRecorder _recorder = AudioRecorder();
   final config = const RecordConfig(
     encoder: AudioEncoder.pcm16bits,
-    bitRate: 48000 *
-        2 *
-        16, // 48000 samples per second * 2 channels (stereo) * 16 bits per sample
+    bitRate: 48000 * 2 * 16,
+    // 48000 samples per second * 2 channels (stereo) * 16 bits per sample
     sampleRate: 48000,
     numChannels: 1,
     autoGain: true,
@@ -29,11 +28,11 @@ class DartAudio {
   DartAudio() {
     final AudioContext audioContext = AudioContext(
       android: const AudioContextAndroid(
-        isSpeakerphoneOn: false,
+        isSpeakerphoneOn: true,
         audioMode: AndroidAudioMode.normal,
         stayAwake: false,
         contentType: AndroidContentType.speech,
-        usageType: AndroidUsageType.voiceCommunication,
+        usageType: AndroidUsageType.media,
         audioFocus: AndroidAudioFocus.gain,
       ),
     );
@@ -71,8 +70,8 @@ class DartAudio {
   // ----------------------------------------------------------------
   // (A) Recording fallback: returning a Stream of chunked bytes
   // ----------------------------------------------------------------
-  /// Starts recording, returning a stream of byte chunks. 
-  /// You can specify the config (sampleRate, bitRate, etc.) and a 
+  /// Starts recording, returning a stream of byte chunks.
+  /// You can specify the config (sampleRate, bitRate, etc.) and a
   /// "chunkSize" in bytes. Each chunk of raw audio is emitted in the stream.
   Future<Stream<List<int>>> startRecording() async {
     if (_isRecording) {
@@ -86,7 +85,6 @@ class DartAudio {
     // We'll create a StreamController to push chunked data
     final controller = StreamController<List<int>>();
 
-
     // Start streaming from the record package
     final recordStream = await _recorder.startStream(config);
 
@@ -95,7 +93,7 @@ class DartAudio {
     final audioInputBuffer = <int>[];
 
     // Calculate chunk size in bytes, e.g., config.bitRate / 10 for ~100ms
-    final chunkSize = config.bitRate ~/ 10; 
+    final chunkSize = config.bitRate ~/ 10;
 
     _recordSubscription = recordStream.listen(
       (data) {
@@ -144,8 +142,8 @@ class DartAudio {
     _isMuted = false;
   }
 
-  // If you want a simpler "just record to a file," 
-  // you could do it in separate methods. But this is 
+  // If you want a simpler "just record to a file,"
+  // you could do it in separate methods. But this is
   // a chunked streaming approach, same as your original code.
 
   // ----------------------------------------------------------------
